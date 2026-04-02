@@ -19,32 +19,26 @@
             --border: #dde2e8;
             --danger: #dc2626;
             --success: #16a34a;
+            --warning: #f59e0b;
             --shadow: 0 2px 16px rgba(10,36,99,0.08);
         }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
         body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;overflow-x:hidden}
 
         header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);position:sticky;top:0;z-index:100;box-shadow:0 3px 16px rgba(0,0,0,0.18)}
-        .header-inner{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;max-width:600px;margin:0 auto}
-        .header-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
-        .logo-wrap{width:46px;height:46px;flex-shrink:0;border-radius:10px;overflow:hidden;background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center}
-        .logo-wrap img.dvvnl-logo{width:100%;height:100%;object-fit:contain;padding:3px}
+        .header-inner{display:flex;align-items:center;justify-content:center;padding:10px 14px;max-width:600px;margin:0 auto;gap:12px}
+        .logo-wrap{width:52px;height:52px;flex-shrink:0;border-radius:50%;overflow:hidden;background:rgba(255,255,255,0.1);border:2px solid rgba(212,160,23,0.5);display:flex;align-items:center;justify-content:center}
+        .logo-wrap img{width:100%;height:100%;object-fit:contain;border-radius:50%}
         .logo-wrap .svg-fb{display:none;width:100%;height:100%}
-        .header-title h1{color:#fff;font-size:16px;font-weight:700;line-height:1.2}
-        .header-title p{color:var(--accent-light);font-size:9px;font-weight:500;letter-spacing:0.5px;text-transform:uppercase}
+        .header-title{text-align:center}
+        .header-title h1{color:#fff;font-size:17px;font-weight:700;line-height:1.2}
+        .header-title p{color:var(--accent-light);font-size:8px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase}
 
-        .drive-badge{flex-shrink:0;padding:5px 10px;border-radius:20px;font-size:10px;font-weight:600;display:flex;align-items:center;gap:5px;cursor:default;border:1.5px solid transparent}
-        .drive-badge.online{background:rgba(22,163,74,0.15);color:#86efac;border-color:rgba(22,163,74,0.3)}
-        .drive-badge i{font-size:11px}
-
-        .gps-bar{max-width:600px;margin:0 auto;padding:8px 14px;display:flex;align-items:center;gap:8px;font-size:11px;font-weight:500;background:rgba(10,36,99,0.04);border-bottom:1px solid var(--border)}
-        .gps-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-        .gps-dot.searching{background:var(--accent);animation:gpsP 1.2s ease-in-out infinite}
-        .gps-dot.found{background:var(--success)}
-        .gps-dot.error{background:var(--danger)}
-        @keyframes gpsP{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
-        .gps-bar .gps-text{color:var(--text-muted)}
-        .gps-bar .gps-coords{color:var(--primary);font-weight:600;margin-left:auto;font-size:10px}
+        /* HTTPS वार्निंग */
+        .https-warn{max-width:600px;margin:0 auto;padding:8px 14px;background:linear-gradient(90deg,rgba(245,158,11,0.12),rgba(220,38,38,0.08));border-bottom:1px solid rgba(245,158,11,0.2);display:none;align-items:center;gap:8px;font-size:10px;color:var(--danger);font-weight:500}
+        .https-warn.show{display:flex}
+        .https-warn i{font-size:13px;color:var(--warning);animation:warnP 1.5s ease-in-out infinite}
+        @keyframes warnP{0%,100%{opacity:1}50%{opacity:0.4}}
 
         main{max-width:600px;margin:0 auto;padding:14px 12px 32px}
         .form-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;animation:slideU 0.4s ease-out}
@@ -73,9 +67,12 @@
 
         .photo-section{margin-bottom:18px}
         .photo-section>label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
-        .photo-area{border:2px dashed var(--border);border-radius:14px;padding:18px;text-align:center;background:#f7f8fa;cursor:pointer;transition:all 0.3s;position:relative}
-        .photo-area:active{transform:scale(0.98)}
-        .photo-area:hover{border-color:var(--primary)}
+        .photo-btns{display:flex;gap:8px;margin-bottom:8px}
+        .photo-btn{flex:1;padding:10px 8px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;background:#f7f8fa;color:var(--text);transition:all 0.25s}
+        .photo-btn:active{transform:scale(0.97);border-color:var(--primary);color:var(--primary)}
+        .photo-btn i{font-size:16px;color:var(--primary)}
+        .photo-area{border:2px dashed var(--border);border-radius:14px;padding:18px;text-align:center;background:#f7f8fa;cursor:pointer;transition:all 0.3s;position:relative;display:none}
+        .photo-area.show{display:block}
         .photo-area.captured{border-style:solid;border-color:var(--success);background:rgba(22,163,74,0.02);padding:6px}
         .ph-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0}
         .cam-circle{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(10,36,99,0.2)}
@@ -84,7 +81,6 @@
         .ph-placeholder p b{color:var(--primary)}
         .captured-img{display:none;width:100%;border-radius:10px;overflow:hidden;position:relative}
         .captured-img img{width:100%;display:block;border-radius:10px}
-        .gps-stamp-badge{position:absolute;bottom:6px;left:6px;background:rgba(0,0,0,0.65);color:#fff;font-size:9px;font-weight:500;padding:3px 7px;border-radius:6px;display:flex;align-items:center;gap:4px;backdrop-filter:blur(4px)}
         .retake-btn{display:none;margin-top:8px;padding:7px 18px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--primary);background:rgba(10,36,99,0.06);border:1.5px solid var(--primary);border-radius:8px;cursor:pointer;transition:all 0.25s}
         .retake-btn:active{background:var(--primary);color:#fff}
 
@@ -128,16 +124,7 @@
 
         .toast-msg{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--danger);color:#fff;padding:10px 20px;border-radius:10px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;box-shadow:0 6px 20px rgba(220,38,38,0.3);z-index:2000;transition:transform 0.35s ease;display:flex;align-items:center;gap:6px;white-space:nowrap;max-width:90vw}
         .toast-msg.show{transform:translateX(-50%) translateY(0)}
-
-        .drive-guide{max-width:600px;margin:0 auto;padding:0 12px}
-        .guide-toggle{width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--primary);cursor:pointer;display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
-        .guide-toggle:active{background:#f0f2f5}
-        .guide-content{display:none;background:var(--card);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:14px;margin-bottom:14px}
-        .guide-content.open{display:block}
-        .guide-content ol{padding-left:18px;font-size:11px;color:var(--text-muted);line-height:2}
-        .guide-content code{background:rgba(10,36,99,0.06);padding:1px 5px;border-radius:4px;font-size:10px;color:var(--primary);word-break:break-all}
         .footer-note{text-align:center;padding:16px;font-size:10px;color:var(--text-muted);opacity:0.6}
-
         @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
     </style>
 </head>
@@ -145,57 +132,36 @@
 
     <header>
         <div class="header-inner">
-            <div class="header-left">
-                <div class="logo-wrap">
-                    <img class="dvvnl-logo" src="https://dvvnl.org.in/Images/logo.png" alt="DVVNL Logo"
-                         onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
-                    <svg class="svg-fb" viewBox="0 0 80 92" fill="none">
-                        <circle cx="40" cy="38" r="36" fill="#0a2463" stroke="#d4a017" stroke-width="2.5"/>
-                        <circle cx="40" cy="38" r="29" fill="none" stroke="#d4a017" stroke-width="0.8" opacity="0.5"/>
-                        <path d="M40 10L32 34H36L28 58H34L26 72H54L46 58H52L44 34H48Z" fill="#d4a017"/>
-                        <line x1="27" y1="40" x2="53" y2="40" stroke="#d4a017" stroke-width="1.5"/>
-                        <line x1="30" y1="50" x2="50" y2="50" stroke="#d4a017" stroke-width="1.5"/>
-                        <circle cx="27" cy="40" r="2" fill="#d4a017"/><circle cx="53" cy="40" r="2" fill="#d4a017"/>
-                        <circle cx="30" cy="50" r="2" fill="#d4a017"/><circle cx="50" cy="50" r="2" fill="#d4a017"/>
-                        <text x="40" y="88" text-anchor="middle" font-family="Arial" font-size="12" font-weight="bold" fill="#0a2463" letter-spacing="1.5">DVVNL</text>
-                    </svg>
-                </div>
-                <div class="header-title">
-                    <h1>Cross Check Entry</h1>
-                    <p>DVVNL - Dakshinanchal Vidyut Vitran Nigam</p>
-                </div>
+            <div class="logo-wrap">
+                <img class="dvvnl-logo" src="https://i.ibb.co/B3rMGqFJ/logo.jpg" alt="DVVNL Logo"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                <svg class="svg-fb" viewBox="0 0 200 200" fill="none">
+                    <circle cx="100" cy="100" r="98" fill="#0a2463" stroke="#d4a017" stroke-width="4"/>
+                    <circle cx="100" cy="100" r="88" fill="none" stroke="#d4a017" stroke-width="1.5" opacity="0.6"/>
+                    <path d="M100 25L82 80H90L72 130H85L65 160H135L115 130H128L110 80H118Z" fill="#d4a017"/>
+                    <line x1="68" y1="92" x2="132" y2="92" stroke="#d4a017" stroke-width="2"/>
+                    <line x1="75" y1="115" x2="125" y2="115" stroke="#d4a017" stroke-width="2"/>
+                    <circle cx="68" cy="92" r="3.5" fill="#d4a017"/><circle cx="132" cy="92" r="3.5" fill="#d4a017"/>
+                    <circle cx="75" cy="115" r="3" fill="#d4a017"/><circle cx="125" cy="115" r="3" fill="#d4a017"/>
+                    <rect x="78" y="130" width="12" height="18" rx="2" fill="#d4a017" opacity="0.5"/>
+                    <rect x="110" y="125" width="10" height="23" rx="2" fill="#d4a017" opacity="0.5"/>
+                    <path d="M85 148C85 148 90 140 95 148" stroke="#0a2463" stroke-width="1.5" fill="none"/>
+                    <text x="100" y="192" text-anchor="middle" font-family="Arial" font-size="13" font-weight="bold" fill="#d4a017" letter-spacing="2">DVVNL</text>
+                </svg>
             </div>
-            <div class="drive-badge online" id="driveBadge">
-                <i class="fab fa-google-drive"></i>
-                <span>Drive Ready</span>
+            <div class="header-title">
+                <h1>Cross Check Entry</h1>
+                <p>Dakshinanchal Vidyut Vitran Nigam Limited</p>
             </div>
         </div>
     </header>
 
-    <div class="gps-bar">
-        <div class="gps-dot searching" id="gpsDot"></div>
-        <span class="gps-text" id="gpsText">GPS खोज रहा है...</span>
-        <span class="gps-coords" id="gpsCoords"></span>
+    <div class="https-warn" id="httpsWarn">
+        <i class="fas fa-triangle-exclamation"></i>
+        <span>HTTPS पर नहीं है — GPS और Camera काम नहीं करेंगे। गैलरी से फोटो चुनें।</span>
     </div>
 
     <main>
-        <div class="drive-guide">
-            <button class="guide-toggle" id="guideToggle" type="button">
-                <span><i class="fas fa-circle-info"></i> Google Drive सेटअप गाइड</span>
-                <i class="fas fa-chevron-down" id="guideArrow" style="transition:transform 0.3s"></i>
-            </button>
-            <div class="guide-content" id="guideContent">
-                <ol>
-                    <li><a href="https://script.google.com/" target="_blank" style="color:var(--primary)">script.google.com</a> खोलें</li>
-                    <li>दिया गया Apps Script कोड पेस्ट करें</li>
-                    <li>Deploy → New deployment → Web app → Anyone → Deploy</li>
-                    <li>जो URL आए उसे कॉपी करें</li>
-                    <li>नीचे कोड में <code>SCRIPT_URL</code> में वो URL डालें</li>
-                    <li>बस! कोई login नहीं करना</li>
-                </ol>
-            </div>
-        </div>
-
         <div class="form-card" id="formCard">
             <div class="form-card-header" id="formHeader">
                 <i class="fas fa-pen-to-square"></i>
@@ -212,17 +178,6 @@
                             <i class="fas fa-hashtag fi"></i>
                         </div>
                         <div class="field-error" id="errAcct"><i class="fas fa-circle-exclamation"></i> खाता संख्या भरना अनिवार्य है</div>
-                    </div>
-
-                    <div class="field-group">
-                        <label for="cName">Consumer Name <span class="req">*</span>
-                            <span class="hindi">उपभोक्ता का नाम</span>
-                        </label>
-                        <div class="input-wrap">
-                            <input type="text" id="cName" placeholder="उपभोक्ता का नाम दर्ज करें" autocomplete="off">
-                            <i class="fas fa-user fi"></i>
-                        </div>
-                        <div class="field-error" id="errName"><i class="fas fa-circle-exclamation"></i> उपभोक्ता का नाम भरना अनिवार्य है</div>
                     </div>
 
                     <div class="field-group">
@@ -246,25 +201,30 @@
 
                     <div class="photo-section">
                         <label>Photo Capture <span class="req">*</span>
-                            <span class="hindi">फोटो खींचें (GPS ऑटो जुड़ेगा)</span>
+                            <span class="hindi">फोटो खींचें या गैलरी से चुनें</span>
                         </label>
-                        <div class="photo-area" id="photoArea" role="button" tabindex="0">
+                        <div class="photo-btns">
+                            <button type="button" class="photo-btn" id="camBtn">
+                                <i class="fas fa-camera"></i> कैमरा
+                            </button>
+                            <button type="button" class="photo-btn" id="galBtn">
+                                <i class="fas fa-image"></i> गैलरी
+                            </button>
+                        </div>
+                        <input type="file" accept="image/*" id="fileInput" style="display:none">
+                        <div class="photo-area" id="photoArea">
                             <div class="ph-placeholder" id="phPlaceholder">
                                 <div class="cam-circle"><i class="fas fa-camera"></i></div>
                                 <p><b>क्लिक करें</b> फोटो कैप्चर करने के लिए</p>
                             </div>
                             <div class="captured-img" id="capturedImg">
-                                <img id="prevImg" src="" alt="Captured Photo">
-                                <div class="gps-stamp-badge" id="gpsStampBadge" style="display:none">
-                                    <i class="fas fa-location-dot"></i>
-                                    <span id="gpsStampText"></span>
-                                </div>
+                                <img id="prevImg" src="" alt="Photo">
                             </div>
                             <button type="button" class="retake-btn" id="retakeBtn">
-                                <i class="fas fa-rotate-right"></i> फोटो दोबारा खींचें
+                                <i class="fas fa-rotate-right"></i> फोटो बदलें
                             </button>
                         </div>
-                        <div class="field-error" id="errPhoto"><i class="fas fa-circle-exclamation"></i> फोटो कैप्चर करना अनिवार्य है</div>
+                        <div class="field-error" id="errPhoto"><i class="fas fa-circle-exclamation"></i> फोटो चुनना अनिवार्य है</div>
                     </div>
 
                     <button type="submit" class="submit-btn" id="submitBtn">
@@ -307,42 +267,123 @@
     <div class="toast-msg" id="toastEl"><i class="fas fa-triangle-exclamation"></i><span id="toastText"></span></div>
 
     <script>
-        /* =====================================================
-           ⬇️⬇️⬇️ यहाँ अपना Apps Script URL डालें ⬇️⬇️⬇️
-           ===================================================== */
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzJXh27z8Lev_IqSk-HPH83rKMeZsTNFcIAXNs82acTVPFc-72FmkXGKyGIvZWEFMc/exec';
-        /* ===================================================== */
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmOFTIjH5kkClKBMNz8YV-PuxP4FdGdUXYJuPSfRG0H_JyF9ceS6sy8JgydS5X_MpywQ/exec';
 
         let capturedData = null, camStream = null, facingMode = 'environment';
         let currentLat = null, currentLng = null, gpsReady = false;
+        let isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
 
         const $ = id => document.getElementById(id);
-        const acctIn = $('acctId'), nameIn = $('cName'), remSel = $('remarks');
+        const acctIn = $('acctId'), remSel = $('remarks');
         const photoArea = $('photoArea'), phHolder = $('phPlaceholder');
         const captImg = $('capturedImg'), prevImg = $('prevImg'), retakeBtn = $('retakeBtn');
         const camModal = $('camModal'), camVideo = $('camVideo'), camCanvas = $('camCanvas');
         const formBody = $('formBody'), sucScreen = $('successScreen');
         const formHdr = $('formHeader'), formCard = $('formCard');
+        const fileInput = $('fileInput');
 
-        /* === GPS === */
+        if (!isHTTPS) $('httpsWarn').classList.add('show');
+
+        /* === GPS (बैकग्राउंड में चलेगा, कुछ दिखाएगा नहीं) === */
         function startGPS() {
-            if (!navigator.geolocation) {
-                $('gpsDot').className = 'gps-dot error';
-                $('gpsText').textContent = 'GPS सपोर्ट नहीं है';
-                return;
-            }
+            if (!navigator.geolocation) return;
+            if (!isHTTPS) return;
             const onPos = pos => {
-                currentLat = pos.coords.latitude; currentLng = pos.coords.longitude;
-                gpsReady = true; $('gpsDot').className = 'gps-dot found';
-                $('gpsText').textContent = 'GPS लोकेशन मिली';
-                $('gpsCoords').textContent = currentLat.toFixed(6) + ', ' + currentLng.toFixed(6);
+                currentLat = pos.coords.latitude;
+                currentLng = pos.coords.longitude;
+                gpsReady = true;
             };
-            const onErr = () => { $('gpsDot').className = 'gps-dot error'; $('gpsText').textContent = 'GPS नहीं मिला'; };
-            const opts = { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 };
-            navigator.geolocation.getCurrentPosition(onPos, onErr, opts);
-            navigator.geolocation.watchPosition(onPos, () => {}, opts);
+            navigator.geolocation.getCurrentPosition(onPos, () => {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+            navigator.geolocation.watchPosition(onPos, () => {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
         }
         startGPS();
+
+        /* === फोटो बटन्स === */
+        $('camBtn').addEventListener('click', () => {
+            if (!isHTTPS) { showToast('HTTPS पर कैमरा नहीं चलेगी। गैलरी से फोटो चुनें।'); return; }
+            openCam();
+        });
+        $('galBtn').addEventListener('click', () => { fileInput.click(); });
+
+        /* === गैलरी फोटो === */
+        fileInput.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        const c = document.createElement('canvas');
+                        c.width = img.width; c.height = img.height;
+                        const ctx = c.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        drawStamp(ctx, c.width, c.height);
+                        capturedData = c.toDataURL('image/jpeg', 0.92);
+                        showPreview();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        /* === GPS स्टैम्प (आपकी दी गई इमेज जैसा स्टाइल) === */
+        function drawStamp(ctx, w, h) {
+            const now = new Date();
+            const ds = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const ts = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
+
+            const barH = Math.max(50, Math.round(h * 0.075));
+            const barY = h - barH;
+
+            /* काली पारदर्शी पट्टी */
+            ctx.fillStyle = 'rgba(0,0,0,0.78)';
+            ctx.fillRect(0, barY, w, barH);
+
+            /* ऊपर पतली पीली लाइन */
+            ctx.fillStyle = '#d4a017';
+            ctx.fillRect(0, barY, w, 2);
+
+            /* फ़ॉन्ट साइज़ फोटो के हिसाब से */
+            const fs1 = Math.max(13, Math.round(w * 0.032));
+            const fs2 = Math.max(11, Math.round(w * 0.026));
+            const fs3 = Math.max(10, Math.round(w * 0.024));
+
+            /* लाइन 1: DVVNL + तारीख + टाइम */
+            ctx.font = 'bold ' + fs1 + 'px Arial, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText('DVVNL', 10, barY + fs1 + 6);
+
+            ctx.font = 'bold ' + fs1 + 'px Arial, sans-serif';
+            ctx.fillStyle = '#f0c040';
+            ctx.textAlign = 'right';
+            ctx.fillText(ds + '  ' + ts, w - 10, barY + fs1 + 6);
+            ctx.textAlign = 'left';
+
+            /* लाइन 2: Lat / Long */
+            ctx.font = fs2 + 'px Arial, sans-serif';
+            ctx.fillStyle = '#cccccc';
+            if (gpsReady && currentLat !== null) {
+                ctx.fillText('Lat ' + currentLat.toFixed(6) + '\u00B0', 10, barY + fs1 + 6 + fs2 + 4);
+                ctx.fillText('Long ' + currentLng.toFixed(6) + '\u00B0', 10 + w * 0.42, barY + fs1 + 6 + fs2 + 4);
+            } else {
+                ctx.fillText('GPS: N/A', 10, barY + fs1 + 6 + fs2 + 4);
+            }
+
+            /* लाइन 3: Acct ID */
+            var acct = acctIn.value.trim();
+            if (acct) {
+                ctx.font = 'bold ' + fs3 + 'px Arial, sans-serif';
+                ctx.fillStyle = '#a0a0a0';
+                ctx.fillText('Acct: ' + acct, 10, barY + fs1 + 6 + fs2 + 4 + fs3 + 3);
+            }
+        }
+
+        function showPreview() {
+            prevImg.src = capturedData;
+            phHolder.style.display = 'none'; captImg.style.display = 'block';
+            retakeBtn.style.display = 'inline-block'; photoArea.classList.add('show', 'captured');
+            $('errPhoto').classList.remove('show');
+        }
 
         /* === कैमरा === */
         async function openCam() {
@@ -352,7 +393,7 @@
                     video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
                 });
                 camVideo.srcObject = camStream;
-            } catch (e) { camModal.classList.remove('active'); showToast('कैमरा एक्सेस नहीं हो पा रहा। परमिशन दें।'); }
+            } catch (e) { camModal.classList.remove('active'); showToast('कैमरा एक्सेस नहीं हो पा रहा। गैलरी से चुनें।'); }
         }
         function closeCam() {
             if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
@@ -362,26 +403,9 @@
             const v = camVideo, c = camCanvas;
             c.width = v.videoWidth; c.height = v.videoHeight;
             const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0);
-            const now = new Date();
-            const ds = now.toLocaleDateString('hi-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-            const ts = now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-            const barH = Math.max(32, Math.round(c.height * 0.05));
-            ctx.fillStyle = 'rgba(0,0,0,0.65)'; ctx.fillRect(0, c.height - barH, c.width, barH);
-            const fs = Math.max(11, Math.round(c.width * 0.022));
-            ctx.font = 'bold ' + fs + 'px Arial,sans-serif'; ctx.fillStyle = '#ffffff';
-            let stamp = ds + '  ' + ts;
-            if (gpsReady && currentLat !== null) stamp += '  |  GPS: ' + currentLat.toFixed(6) + ', ' + currentLng.toFixed(6);
-            else stamp += '  |  GPS: N/A';
-            ctx.fillText(stamp, 8, c.height - Math.round(barH * 0.28));
-            capturedData = c.toDataURL('image/jpeg', 0.88);
-            prevImg.src = capturedData;
-            phHolder.style.display = 'none'; captImg.style.display = 'block';
-            retakeBtn.style.display = 'inline-block'; photoArea.classList.add('captured');
-            if (gpsReady && currentLat !== null) {
-                $('gpsStampBadge').style.display = 'flex';
-                $('gpsStampText').textContent = currentLat.toFixed(6) + ', ' + currentLng.toFixed(6);
-            }
-            $('errPhoto').classList.remove('show'); closeCam();
+            drawStamp(ctx, c.width, c.height);
+            capturedData = c.toDataURL('image/jpeg', 0.92);
+            closeCam(); showPreview();
         }
         async function flipCam() {
             facingMode = facingMode === 'environment' ? 'user' : 'environment';
@@ -397,7 +421,7 @@
             capturedData = null; prevImg.src = '';
             phHolder.style.display = 'flex'; captImg.style.display = 'none';
             retakeBtn.style.display = 'none'; photoArea.classList.remove('captured');
-            $('gpsStampBadge').style.display = 'none';
+            fileInput.value = '';
         }
 
         /* === टोस्ट === */
@@ -413,7 +437,6 @@
             inp.classList.remove('err'); $(eid).classList.remove('show'); return true;
         }
         acctIn.addEventListener('input', () => { if (acctIn.value.trim()) { acctIn.classList.remove('err'); $('errAcct').classList.remove('show'); } });
-        nameIn.addEventListener('input', () => { if (nameIn.value.trim()) { nameIn.classList.remove('err'); $('errName').classList.remove('show'); } });
         remSel.addEventListener('change', () => { if (remSel.value) { remSel.classList.remove('err'); $('errRem').classList.remove('show'); } });
 
         /* === सबमिट === */
@@ -421,7 +444,6 @@
             e.preventDefault();
             let ok = true;
             if (!validate(acctIn, 'errAcct')) ok = false;
-            if (!validate(nameIn, 'errName')) ok = false;
             if (!validate(remSel, 'errRem')) ok = false;
             if (!capturedData) { $('errPhoto').classList.add('show'); ok = false; }
             if (!ok) { showToast('कृपया सभी फील्ड भरें'); return; }
@@ -437,53 +459,37 @@
             const acct = acctIn.value.trim();
 
             const entry = {
-                acctId: acct,
-                consumerName: nameIn.value.trim(),
-                remarks: remSel.value,
-                latitude: currentLat,
-                longitude: currentLng,
-                dateTime: fullDT,
-                timestamp: now.getTime(),
-                photo: capturedData
+                acctId: acct, remarks: remSel.value,
+                latitude: currentLat, longitude: currentLng, dateTime: fullDT,
+                timestamp: now.getTime(), photo: capturedData
             };
 
             let savedLocal = false, savedDrive = false, driveMsg = '';
 
-            /* LocalStorage */
-            try {
-                let ents = JSON.parse(localStorage.getItem('dvvnl_entries') || '[]');
-                ents.push(entry); localStorage.setItem('dvvnl_entries', JSON.stringify(ents));
-                savedLocal = true;
-            } catch (e) { savedLocal = false; }
+            try { let ents = JSON.parse(localStorage.getItem('dvvnl_entries') || '[]'); ents.push(entry); localStorage.setItem('dvvnl_entries', JSON.stringify(ents)); savedLocal = true; } catch (e) { }
 
-                        /* Google Drive via Apps Script */
             if (!SCRIPT_URL.includes('YOUR_URL')) {
                 try {
                     const res = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(entry),
-                        redirect: 'follow'
+                        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(entry), redirect: 'follow'
                     });
                     const data = await res.json();
-                    if (data.drive) { savedDrive = true; }
-                    else { driveMsg = data.msg || 'Drive एरर'; }
+                    if (data.drive) { savedDrive = true; } else { driveMsg = data.msg || 'Drive एरर'; }
                 } catch (e) { driveMsg = 'नेटवर्क एरर'; }
             }
 
-            /* सक्सेस स्क्रीन */
             $('sucDateTime').textContent = fullDT;
             let locHTML = '';
             if (savedLocal) locHTML += '<span class="loc-badge local"><i class="fas fa-mobile-screen"></i> Local</span> ';
             if (savedDrive) locHTML += '<span class="loc-badge drive"><i class="fab fa-google-drive"></i> Google Drive</span> ';
-            if (!savedDrive && SCRIPT_URL.includes('YOUR_URL')) locHTML += '<span class="loc-badge fail"><i class="fas fa-exclamation"></i> Drive URL सेट नहीं है</span> ';
-            else if (!savedDrive) locHTML += '<span class="loc-badge fail"><i class="fas fa-exclamation"></i> Drive: ' + driveMsg + '</span> ';
+            if (!savedDrive && SCRIPT_URL.includes('YOUR_URL')) locHTML += '<span class="loc-badge fail"><i class="fas fa-exclamation"></i> Drive URL सेट नहीं</span> ';
+            else if (!savedDrive) locHTML += '<span class="loc-badge fail"><i class="fas fa-exclamation"></i> ' + driveMsg + '</span> ';
             $('sucSaveLoc').innerHTML = locHTML;
 
             formBody.style.display = 'none'; formHdr.style.display = 'none';
             sucScreen.classList.add('active');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Entry';
+            btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Entry';
         });
 
         /* === नई एंट्री === */
@@ -496,22 +502,11 @@
         });
 
         /* === इवेंट्स === */
-        photoArea.addEventListener('click', e => {
-            if (e.target === retakeBtn || retakeBtn.contains(e.target)) return;
-            if (!photoArea.classList.contains('captured')) openCam();
-        });
-        photoArea.addEventListener('keydown', e => {
-            if ((e.key === 'Enter' || e.key === ' ') && !photoArea.classList.contains('captured')) { e.preventDefault(); openCam(); }
-        });
-        retakeBtn.addEventListener('click', e => { e.stopPropagation(); retakePhoto(); });
+        retakeBtn.addEventListener('click', () => { retakePhoto(); });
         $('shutterBtn').addEventListener('click', capturePhoto);
         $('camCloseBtn').addEventListener('click', closeCam);
         $('flipBtn').addEventListener('click', flipCam);
         document.addEventListener('keydown', e => { if (e.key === 'Escape' && camModal.classList.contains('active')) closeCam(); });
-        $('guideToggle').addEventListener('click', () => {
-            const c = $('guideContent'), a = $('guideArrow');
-            c.classList.toggle('open'); a.style.transform = c.classList.contains('open') ? 'rotate(180deg)' : '';
-        });
     </script>
 </body>
 </html>
