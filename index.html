@@ -255,8 +255,9 @@
 
         let capturedData = null, camStream = null, facingMode = 'environment';
         let currentLat = null, currentLng = null, gpsReady = false;
-        let currentLocationName = null; // जगह का नाम
-        let geoFetchTimer = null; // debounce timer
+        let currentLocationName = null;
+        let locNamePromise = null;
+        let locNameDone = false;
         let isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
 
         const $ = id => document.getElementById(id);
@@ -270,66 +271,81 @@
 
         if (!isHTTPS) $('httpsWarn').classList.add('show');
 
-        /* ========== जगह का नाम निकालने का फंक्शन (Reverse Geocoding) ========== */
+        /* ========== Nominatim से जगह का नाम लाना (तुरंत, बिना delay) ========== */
         function parseGeoName(data) {
             const a = data.address || {};
             const parts = [];
-            // पहले छोटा इलाका
             if (a.village) parts.push(a.village);
             else if (a.suburb) parts.push(a.suburb);
             else if (a.locality) parts.push(a.locality);
             else if (a.neighbourhood) parts.push(a.neighbourhood);
             else if (a.hamlet) parts.push(a.hamlet);
-            // फिर शहर/कस्बा
             if (a.city && !parts.includes(a.city)) parts.push(a.city);
             else if (a.town && !parts.includes(a.town)) parts.push(a.town);
             else if (a.state_district && !parts.includes(a.state_district)) parts.push(a.state_district);
-            // फिर जिला
             if (a.county && !parts.includes(a.county)) parts.push(a.county);
-            // फिर राज्य
             if (a.state && !parts.includes(a.state)) parts.push(a.state);
-            return parts.length > 0 ? parts.join(', ') : (data.display_name || 'N/A');
+            if (parts.length > 0) return parts.join(', ');
+            // fallback: display_name से पहले 3 हिस्से लें
+            if (data.display_name) {
+                return data.display_name.split(',').slice(0, 3).join(',').trim();
+            }
+            return null;
         }
 
         function fetchLocationName(lat, lng) {
-            // Nominatim API से जगह का नाम लाएं (debounce - 5 सेकंड)
-            clearTimeout(geoFetchTimer);
-            geoFetchTimer = setTimeout(async () => {
-                try {
-                    const url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=hi,en&zoom=16';
-                    const res = await fetch(url, { headers: { 'User-Agent': 'DVVNL-CrossCheck-App/1.0' } });
-                    const data = await res.json();
+            // अगर पहले से fetch चल रहा है या हो चुका है तो फिर से न करें
+            if (locNamePromise) return locNamePromise;
+
+            locNamePromise = new Promise(function (resolve) {
+                var controller = new AbortController();
+                var timeoutId = setTimeout(function () { controller.abort(); }, 8000);
+
+                fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=hi,en&zoom=16&addressdetails=1', {
+                    headers: { 'User-Agent': 'DVVNL-CrossCheck-App/1.0' },
+                    signal: controller.signal
+                })
+                .then(function (res) { return res.json(); })
+                .then(function (data) {
+                    clearTimeout(timeoutId);
                     if (data && data.display_name) {
                         currentLocationName = parseGeoName(data);
-                    } else {
-                        currentLocationName = null;
                     }
-                } catch (e) {
-                    currentLocationName = null;
-                }
-            }, 2000);
+                })
+                .catch(function () {
+                    clearTimeout(timeoutId);
+                })
+                .finally(function () {
+                    locNameDone = true;
+                    resolve();
+                });
+            });
+            return locNamePromise;
         }
 
-        /* ========== GPS शुरू करें ========== */
+        /* ========== GPS शुरू ========== */
         function startGPS() {
             if (!navigator.geolocation || !isHTTPS) return;
-            const onPos = pos => {
+            var firstFix = true;
+            function onPos(pos) {
                 currentLat = pos.coords.latitude;
                 currentLng = pos.coords.longitude;
                 gpsReady = true;
-                // जगह का नाम लाएं (सिर्फ पहली बार या 50m से ज्यादा बदले तो)
-                fetchLocationName(currentLat, currentLng);
-            };
-            navigator.geolocation.getCurrentPosition(onPos, () => {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
-            navigator.geolocation.watchPosition(onPos, () => {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+                // सिर्फ पहली बार location name fetch करें (तुरंत, कोई delay नहीं)
+                if (firstFix) {
+                    firstFix = false;
+                    fetchLocationName(currentLat, currentLng);
+                }
+            }
+            navigator.geolocation.getCurrentPosition(onPos, function () {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+            navigator.geolocation.watchPosition(onPos, function () {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
         }
         startGPS();
 
-        /* ========== Canvas पर पिन आइकन बनाने का फंक्शन ========== */
+        /* ========== Canvas पर पिन आइकन ========== */
         function drawPinIcon(ctx, x, y, size) {
-            const s = size;
+            var s = size;
             ctx.save();
-            // पिन का आकार
             ctx.beginPath();
             ctx.moveTo(x, y + s * 0.9);
             ctx.bezierCurveTo(x - s * 0.55, y + s * 0.35, x - s * 0.5, y - s * 0.15, x, y - s * 0.5);
@@ -337,7 +353,6 @@
             ctx.closePath();
             ctx.fillStyle = '#f0c040';
             ctx.fill();
-            // अंदर का सफेद गोल
             ctx.beginPath();
             ctx.arc(x, y - s * 0.1, s * 0.2, 0, Math.PI * 2);
             ctx.fillStyle = '#0a2463';
@@ -345,70 +360,65 @@
             ctx.restore();
         }
 
-        /* ========== Canvas पर टेक्स्ट ट्रंकेट करने का फंक्शन ========== */
+        /* ========== टेक्स्ट ट्रंकेट ========== */
         function truncateText(ctx, text, maxWidth) {
             if (ctx.measureText(text).width <= maxWidth) return text;
-            let t = text;
+            var t = text;
             while (t.length > 3 && ctx.measureText(t + '...').width > maxWidth) {
                 t = t.slice(0, -1);
             }
             return t + '...';
         }
 
-        /* ========== स्टैम्प बनाने का फंक्शन (अपडेटेड) ========== */
+        /* ========== स्टैम्प बनाना ========== */
         function drawStamp(ctx, w, h) {
-            const now = new Date();
-            const ds = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const ts = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
+            var now = new Date();
+            var ds = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            var ts = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
 
-            // बार की हाइट - 4 लाइन के लिए ज्यादा जगह
-            const barH = Math.max(80, Math.round(h * 0.11));
-            const barY = h - barH;
+            // 4 लाइनों के लिए बार हाइट
+            var barH = Math.max(88, Math.round(h * 0.12));
+            var barY = h - barH;
 
-            // डार्क बैकग्राउंड
-            ctx.fillStyle = 'rgba(0,0,0,0.82)';
+            ctx.fillStyle = 'rgba(0,0,0,0.85)';
             ctx.fillRect(0, barY, w, barH);
-
-            // ऊपर गोल्ड लाइन
             ctx.fillStyle = '#d4a017';
             ctx.fillRect(0, barY, w, 2);
 
-            // फॉन्ट साइज़ (छवि की चौड़ाई के अनुपात में)
-            const fsLoc = Math.max(13, Math.round(w * 0.03));   // लोकेशन नाम
-            const fsBrand = Math.max(12, Math.round(w * 0.028)); // DVVNL
-            const fsDT = Math.max(12, Math.round(w * 0.028));    // Date Time
-            const fsGPS = Math.max(11, Math.round(w * 0.024));   // GPS / Acct
+            var fsLoc = Math.max(13, Math.round(w * 0.03));
+            var fsBrand = Math.max(12, Math.round(w * 0.028));
+            var fsDT = Math.max(12, Math.round(w * 0.028));
+            var fsGPS = Math.max(11, Math.round(w * 0.024));
+            var lineGap = Math.max(5, Math.round(h * 0.007));
+            var padX = 10;
+            var textW = w - padX * 2;
 
-            const lineGap = Math.max(4, Math.round(h * 0.006));
-            const padX = 10;
-            const textW = w - padX * 2;
-
-            // ---- लाइन 1: लोकेशन नाम (पिन आइकन + नाम) ----
-            let locText = 'Location: Fetching...';
+            /* ---- लाइन 1: जगह का नाम (पिन + नाम) ---- */
+            var locText = '';
             if (currentLocationName) {
                 locText = currentLocationName;
-            } else if (!gpsReady) {
+            } else if (gpsReady && currentLat !== null) {
+                // नाम अभी नहीं आया, तो Lat/Long दिखाएं
+                locText = 'Lat: ' + currentLat.toFixed(6) + '\u00B0, Long: ' + currentLng.toFixed(6) + '\u00B0';
+            } else {
                 locText = 'Location: N/A';
             }
 
-            ctx.font = 'bold ' + fsLoc + 'px Arial, sans-serif';
-            ctx.fillStyle = '#f0c040';
-
-            // पिन आइकन बनाएं
-            const pinSize = fsLoc * 1.3;
-            const pinX = padX + pinSize * 0.35;
-            const pinY = barY + pinSize * 0.55 + 4;
+            var pinSize = fsLoc * 1.3;
+            var pinX = padX + pinSize * 0.35;
+            var pinY = barY + pinSize * 0.55 + 4;
             drawPinIcon(ctx, pinX, pinY, pinSize);
 
-            // लोकेशन टेक्स्ट (पिन के बाद)
-            const locStartX = padX + pinSize * 0.9;
-            const locMaxW = textW - pinSize * 0.9;
-            const locDisplay = truncateText(ctx, locText, locMaxW);
-            ctx.textAlign = 'left';
-            ctx.fillText(locDisplay, locStartX, barY + fsLoc + 6);
+            var locStartX = padX + pinSize * 0.9;
+            var locMaxW = textW - pinSize * 0.9;
 
-            // ---- लाइन 2: DVVNL (बाएं) | Date & Time (दाएं) ----
-            const line2Y = barY + fsLoc + 6 + fsBrand + lineGap + 2;
+            ctx.font = 'bold ' + fsLoc + 'px Arial, sans-serif';
+            ctx.fillStyle = '#f0c040';
+            ctx.textAlign = 'left';
+            ctx.fillText(truncateText(ctx, locText, locMaxW), locStartX, barY + fsLoc + 6);
+
+            /* ---- लाइन 2: DVVNL (बाएं) | Date & Time (दाएं) ---- */
+            var line2Y = barY + fsLoc + 6 + fsBrand + lineGap + 2;
 
             ctx.font = 'bold ' + fsBrand + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
@@ -421,27 +431,24 @@
             ctx.fillText(ds + '  ' + ts, w - padX, line2Y);
             ctx.textAlign = 'left';
 
-            // ---- लाइन 3: Lat, Long (बाएं) | Acct (दाएं) ----
-            const line3Y = line2Y + fsGPS + lineGap + 2;
-
+            /* ---- लाइन 3: Lat & Long ---- */
+            var line3Y = line2Y + fsGPS + lineGap + 2;
             ctx.font = fsGPS + 'px Arial, sans-serif';
             ctx.fillStyle = '#cccccc';
             ctx.textAlign = 'left';
 
             if (gpsReady && currentLat !== null) {
-                const latStr = 'Lat: ' + currentLat.toFixed(6) + '\u00B0';
-                const longStr = 'Long: ' + currentLng.toFixed(6) + '\u00B0';
+                var latStr = 'Lat: ' + currentLat.toFixed(6) + '\u00B0';
+                var longStr = 'Long: ' + currentLng.toFixed(6) + '\u00B0';
                 ctx.fillText(latStr, padX, line3Y);
-
-                // Long बीच में या दाएं
-                const latW = ctx.measureText(latStr).width;
-                const gapBetween = Math.max(14, Math.round(w * 0.03));
-                ctx.fillText(longStr, padX + latW + gapBetween, line3Y);
+                var latW = ctx.measureText(latStr).width;
+                var gapB = Math.max(14, Math.round(w * 0.03));
+                ctx.fillText(longStr, padX + latW + gapB, line3Y);
             } else {
                 ctx.fillText('GPS: N/A', padX, line3Y);
             }
 
-            // Acct ID दाएं तरफ
+            // Acct ID दाएं
             var acct = acctIn.value.trim();
             if (acct) {
                 ctx.font = 'bold ' + fsGPS + 'px Arial, sans-serif';
@@ -451,30 +458,43 @@
                 ctx.textAlign = 'left';
             }
 
-            // नीचे एक पतली गोल्ड लाइन
+            // नीचे पतली लाइन
             ctx.fillStyle = 'rgba(212,160,23,0.3)';
             ctx.fillRect(0, barY + barH - 1, w, 1);
         }
 
-        /* ========== शेष सब कुछ (पहले जैसा) ========== */
-        $('camBtn').addEventListener('click', () => {
+        /* ========== फोटो कैप्चर (location name wait के साथ) ========== */
+        async function doCapture(sourceCanvas) {
+            // अगर GPS है लेकिन location name अभी तक नहीं आया, तो 3 सेकंड और रुकें
+            if (gpsReady && !locNameDone && locNamePromise) {
+                await Promise.race([
+                    locNamePromise,
+                    new Promise(function (r) { setTimeout(r, 3000); })
+                ]);
+            }
+            var ctx = sourceCanvas.getContext('2d');
+            drawStamp(ctx, sourceCanvas.width, sourceCanvas.height);
+            capturedData = sourceCanvas.toDataURL('image/jpeg', 0.92);
+        }
+
+        /* ========== कैमरा / गैलरी बटन ========== */
+        $('camBtn').addEventListener('click', function () {
             if (!isHTTPS) { showToast('HTTPS पर कैमरा नहीं चलेगी। गैलरी से फोटो चुनें।'); return; }
             openCam();
         });
-        $('galBtn').addEventListener('click', () => { fileInput.click(); });
+        $('galBtn').addEventListener('click', function () { fileInput.click(); });
 
         fileInput.addEventListener('change', function () {
             if (this.files && this.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const img = new Image();
-                    img.onload = function () {
-                        const c = document.createElement('canvas');
+                var reader = new FileReader();
+                reader.onload = async function (e) {
+                    var img = new Image();
+                    img.onload = async function () {
+                        var c = document.createElement('canvas');
                         c.width = img.width; c.height = img.height;
-                        const ctx = c.getContext('2d');
+                        var ctx = c.getContext('2d');
                         ctx.drawImage(img, 0, 0);
-                        drawStamp(ctx, c.width, c.height);
-                        capturedData = c.toDataURL('image/jpeg', 0.92);
+                        await doCapture(c);
                         showPreview();
                     };
                     img.src = e.target.result;
@@ -494,29 +514,28 @@
             try {
                 camModal.classList.add('active');
                 camStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+                    video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
                 });
                 camVideo.srcObject = camStream;
             } catch (e) { camModal.classList.remove('active'); showToast('कैमरा एक्सेस नहीं हो पा रहा। गैलरी से चुनें।'); }
         }
         function closeCam() {
-            if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+            if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
             camVideo.srcObject = null; camModal.classList.remove('active');
         }
-        function capturePhoto() {
-            const v = camVideo, c = camCanvas;
+        async function capturePhoto() {
+            var v = camVideo, c = camCanvas;
             c.width = v.videoWidth; c.height = v.videoHeight;
-            const ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0);
-            drawStamp(ctx, c.width, c.height);
-            capturedData = c.toDataURL('image/jpeg', 0.92);
+            var ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0);
+            await doCapture(c);
             closeCam(); showPreview();
         }
         async function flipCam() {
             facingMode = facingMode === 'environment' ? 'user' : 'environment';
-            if (camStream) camStream.getTracks().forEach(t => t.stop());
+            if (camStream) camStream.getTracks().forEach(function (t) { t.stop(); });
             try {
                 camStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+                    video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
                 });
                 camVideo.srcObject = camStream;
             } catch (e) { }
@@ -528,61 +547,61 @@
             fileInput.value = '';
         }
 
-        let toastT = null;
+        var toastT = null;
         function showToast(m) {
             $('toastText').textContent = m; $('toastEl').classList.add('show');
-            clearTimeout(toastT); toastT = setTimeout(() => $('toastEl').classList.remove('show'), 3000);
+            clearTimeout(toastT); toastT = setTimeout(function () { $('toastEl').classList.remove('show'); }, 3000);
         }
 
         function validate(inp, eid) {
             if (!inp.value.trim()) { inp.classList.add('err'); $(eid).classList.add('show'); return false; }
             inp.classList.remove('err'); $(eid).classList.remove('show'); return true;
         }
-        acctIn.addEventListener('input', () => { if (acctIn.value.trim()) { acctIn.classList.remove('err'); $('errAcct').classList.remove('show'); } });
-        remSel.addEventListener('change', () => { if (remSel.value) { remSel.classList.remove('err'); $('errRem').classList.remove('show'); } });
+        acctIn.addEventListener('input', function () { if (acctIn.value.trim()) { acctIn.classList.remove('err'); $('errAcct').classList.remove('show'); } });
+        remSel.addEventListener('change', function () { if (remSel.value) { remSel.classList.remove('err'); $('errRem').classList.remove('show'); } });
 
         $('entryForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            let ok = true;
+            var ok = true;
             if (!validate(acctIn, 'errAcct')) ok = false;
             if (!validate(remSel, 'errRem')) ok = false;
             if (!capturedData) { $('errPhoto').classList.add('show'); ok = false; }
             if (!ok) { showToast('कृपया सभी फील्ड भरें'); return; }
 
-            const btn = $('submitBtn');
+            var btn = $('submitBtn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
-            const now = new Date();
-            const ds = now.toLocaleDateString('hi-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-            const ts = now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-            const fullDT = ds + ' | ' + ts;
-            const acct = acctIn.value.trim();
+            var now = new Date();
+            var ds2 = now.toLocaleDateString('hi-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            var ts2 = now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            var fullDT = ds2 + ' | ' + ts2;
+            var acct = acctIn.value.trim();
 
-            const entry = {
+            var entry = {
                 acctId: acct, remarks: remSel.value,
                 latitude: currentLat, longitude: currentLng,
                 locationName: currentLocationName || 'N/A',
                 dateTime: fullDT, timestamp: now.getTime(), photo: capturedData
             };
 
-            let savedLocal = false, savedDrive = false, driveMsg = '';
+            var savedLocal = false, savedDrive = false, driveMsg = '';
 
-            try { let ents = JSON.parse(localStorage.getItem('dvvnl_entries') || '[]'); ents.push(entry); localStorage.setItem('dvvnl_entries', JSON.stringify(ents)); savedLocal = true; } catch (e) { }
+            try { var ents = JSON.parse(localStorage.getItem('dvvnl_entries') || '[]'); ents.push(entry); localStorage.setItem('dvvnl_entries', JSON.stringify(ents)); savedLocal = true; } catch (e) { }
 
             if (!SCRIPT_URL.includes('YOUR_URL')) {
                 try {
-                    const res = await fetch(SCRIPT_URL, {
+                    var res = await fetch(SCRIPT_URL, {
                         method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                         body: JSON.stringify(entry), redirect: 'follow'
                     });
-                    const data = await res.json();
+                    var data = await res.json();
                     if (data.drive) { savedDrive = true; } else { driveMsg = data.msg || 'Drive एरर'; }
                 } catch (e) { driveMsg = 'नेटवर्क एरर'; }
             }
 
             $('sucDateTime').textContent = fullDT;
-            let locHTML = '';
+            var locHTML = '';
             if (savedLocal) locHTML += '<span class="loc-badge local"><i class="fas fa-mobile-screen"></i> Local</span> ';
             if (savedDrive) locHTML += '<span class="loc-badge drive"><i class="fab fa-google-drive"></i> Google Drive</span> ';
             if (!savedDrive && SCRIPT_URL.includes('YOUR_URL')) locHTML += '<span class="loc-badge fail"><i class="fas fa-exclamation"></i> Drive URL सेट नहीं</span> ';
@@ -594,19 +613,19 @@
             btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Entry';
         });
 
-        $('newEntryBtn').addEventListener('click', () => {
+        $('newEntryBtn').addEventListener('click', function () {
             $('entryForm').reset(); retakePhoto(); capturedData = null;
-            document.querySelectorAll('.err').forEach(el => el.classList.remove('err'));
-            document.querySelectorAll('.field-error').forEach(el => el.classList.remove('show'));
+            document.querySelectorAll('.err').forEach(function (el) { el.classList.remove('err'); });
+            document.querySelectorAll('.field-error').forEach(function (el) { el.classList.remove('show'); });
             sucScreen.classList.remove('active'); formHdr.style.display = 'flex'; formBody.style.display = 'block';
             formCard.style.animation = 'none'; formCard.offsetHeight; formCard.style.animation = 'slideU 0.4s ease-out';
         });
 
-        retakeBtn.addEventListener('click', () => { retakePhoto(); });
+        retakeBtn.addEventListener('click', function () { retakePhoto(); });
         $('shutterBtn').addEventListener('click', capturePhoto);
         $('camCloseBtn').addEventListener('click', closeCam);
         $('flipBtn').addEventListener('click', flipCam);
-        document.addEventListener('keydown', e => { if (e.key === 'Escape' && camModal.classList.contains('active')) closeCam(); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && camModal.classList.contains('active')) closeCam(); });
     </script>
 </body>
 </html>
