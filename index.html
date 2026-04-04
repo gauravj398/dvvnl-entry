@@ -251,7 +251,7 @@
     <div class="toast-msg" id="toastEl"><i class="fas fa-triangle-exclamation"></i><span id="toastText"></span></div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzmOFTIjH5kkClKBMNz8YV-PuxP4FdGdUXYJuPSfRG0H_JyF9ceS6sy8JgydS5X_MpywQ/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzljXcVApshV8imjW7p9q3TsM5wRMaHHXJa5QXr8R8kD82IS_WFET4KNubMsGq6w5hV/exec';
 
         let capturedData = null, camStream = null, facingMode = 'environment';
         let currentLat = null, currentLng = null, gpsReady = false;
@@ -325,24 +325,6 @@
         }
         startGPS();
 
-        /* ========== पिन आइकन ========== */
-        function drawPinIcon(ctx, x, y, size) {
-            var s = size;
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(x, y + s * 0.9);
-            ctx.bezierCurveTo(x - s * 0.55, y + s * 0.35, x - s * 0.5, y - s * 0.15, x, y - s * 0.5);
-            ctx.bezierCurveTo(x + s * 0.5, y - s * 0.15, x + s * 0.55, y + s * 0.35, x, y + s * 0.9);
-            ctx.closePath();
-            ctx.fillStyle = '#ffffff';
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x, y - s * 0.1, s * 0.2, 0, Math.PI * 2);
-            ctx.fillStyle = '#0a2463';
-            ctx.fill();
-            ctx.restore();
-        }
-
         /* ========== टेक्स्ट ट्रंकेट ========== */
         function truncateText(ctx, text, maxWidth) {
             if (ctx.measureText(text).width <= maxWidth) return text;
@@ -351,34 +333,35 @@
             return t + '...';
         }
 
-        /* ========== स्टैम्प (बड़ा फॉन्ट + सफेद कलर) ========== */
+        /* ========== स्टैम्प (लाइट बैकग्राउंड, कोई पिन नहीं, 4 लाइन) ========== */
         function drawStamp(ctx, w, h) {
             var now = new Date();
             var ds = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
             var ts = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
 
-            // बड़े फॉन्ट के लिए बार भी बड़ा
-            var barH = Math.max(120, Math.round(h * 0.16));
+            // 4 लाइनों के लिए बार हाइट
+            var barH = Math.max(140, Math.round(h * 0.18));
             var barY = h - barH;
 
-            // बैकग्राउंड
-            ctx.fillStyle = 'rgba(0,0,0,0.88)';
+            // हल्का बैकग्राउंड — फोटो पीछे से हल्की दिखे
+            ctx.fillStyle = 'rgba(0,0,0,0.45)';
             ctx.fillRect(0, barY, w, barH);
 
-            // ऊपर गोल्ड लाइन (थोड़ी मोटी)
+            // ऊपर गोल्ड लाइन
             ctx.fillStyle = '#d4a017';
             ctx.fillRect(0, barY, w, 3);
 
-            // बड़े फॉन्ट साइज़ (पहले से ~50% बड़े)
-            var fsLoc = Math.max(20, Math.round(w * 0.045));
-            var fsBrand = Math.max(18, Math.round(w * 0.042));
-            var fsDT = Math.max(18, Math.round(w * 0.042));
-            var fsGPS = Math.max(16, Math.round(w * 0.036));
-            var lineGap = Math.max(8, Math.round(h * 0.012));
+            // फॉन्ट साइज़
+            var fsLoc = Math.max(19, Math.round(w * 0.042));
+            var fsBrand = Math.max(17, Math.round(w * 0.038));
+            var fsDT = Math.max(17, Math.round(w * 0.038));
+            var fsGPS = Math.max(15, Math.round(w * 0.034));
+            var fsAcct = Math.max(15, Math.round(w * 0.034));
+            var lineGap = Math.max(6, Math.round(h * 0.008));
             var padX = 12;
             var textW = w - padX * 2;
 
-            /* ---- लाइन 1: जगह का नाम ---- */
+            // ---- लाइन 1: जगह का नाम (कोई आइकन नहीं) ----
             var locText = '';
             if (currentLocationName) {
                 locText = currentLocationName;
@@ -388,20 +371,12 @@
                 locText = 'Location: N/A';
             }
 
-            var pinSize = fsLoc * 1.4;
-            var pinX = padX + pinSize * 0.35;
-            var pinY = barY + pinSize * 0.6 + 6;
-            drawPinIcon(ctx, pinX, pinY, pinSize);
-
-            var locStartX = padX + pinSize * 0.95;
-            var locMaxW = textW - pinSize * 0.95;
-
             ctx.font = 'bold ' + fsLoc + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'left';
-            ctx.fillText(truncateText(ctx, locText, locMaxW), locStartX, barY + fsLoc + 8);
+            ctx.fillText(truncateText(ctx, locText, textW), padX, barY + fsLoc + 8);
 
-            /* ---- लाइन 2: DVVNL + Date & Time ---- */
+            // ---- लाइन 2: DVVNL (बाएं) + Date & Time (दाएं) ----
             var line2Y = barY + fsLoc + 8 + fsBrand + lineGap + 2;
 
             ctx.font = 'bold ' + fsBrand + 'px Arial, sans-serif';
@@ -415,7 +390,7 @@
             ctx.fillText(ds + '  ' + ts, w - padX, line2Y);
             ctx.textAlign = 'left';
 
-            /* ---- लाइन 3: Lat & Long + Acct ---- */
+            // ---- लाइन 3: Lat & Long (पूरी चौड़ाई में) ----
             var line3Y = line2Y + fsGPS + lineGap + 2;
             ctx.font = 'bold ' + fsGPS + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
@@ -426,19 +401,20 @@
                 var longStr = 'Long: ' + currentLng.toFixed(6) + '\u00B0';
                 ctx.fillText(latStr, padX, line3Y);
                 var latW = ctx.measureText(latStr).width;
-                var gapB = Math.max(18, Math.round(w * 0.04));
+                var gapB = Math.max(20, Math.round(w * 0.045));
                 ctx.fillText(longStr, padX + latW + gapB, line3Y);
             } else {
                 ctx.fillText('GPS: N/A', padX, line3Y);
             }
 
+            // ---- लाइन 4: Acct ID (अलग लाइन, बाएं) ----
             var acct = acctIn.value.trim();
             if (acct) {
-                ctx.font = 'bold ' + fsGPS + 'px Arial, sans-serif';
+                var line4Y = line3Y + fsAcct + lineGap + 2;
+                ctx.font = 'bold ' + fsAcct + 'px Arial, sans-serif';
                 ctx.fillStyle = '#ffffff';
-                ctx.textAlign = 'right';
-                ctx.fillText('Acct: ' + acct, w - padX, line3Y);
                 ctx.textAlign = 'left';
+                ctx.fillText('Acct: ' + acct, padX, line4Y);
             }
 
             // नीचे गोल्ड लाइन
@@ -446,7 +422,7 @@
             ctx.fillRect(0, barY + barH - 3, w, 3);
         }
 
-        /* ========== फोटो कैप्चर (location wait) ========== */
+        /* ========== फोटो कैप्चर ========== */
         async function doCapture(sourceCanvas) {
             if (gpsReady && !locNameDone && locNamePromise) {
                 await Promise.race([
