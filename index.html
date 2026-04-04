@@ -98,7 +98,7 @@
         .success-screen h2{font-size:20px;font-weight:800;margin-bottom:6px}
         .success-screen .suc-sub{font-size:12px;color:var(--text-muted);margin-bottom:6px}
         .suc-datetime{display:inline-flex;align-items:center;gap:6px;background:rgba(10,36,99,0.05);padding:6px 14px;border-radius:16px;font-size:11px;font-weight:500;color:var(--primary);margin-bottom:6px}
-        .suc-save-loc{font-size:10px;color:var(--text-muted);margin-bottom:26px;display:flex;align-items:center;justify-content:center;gap:6px}
+        .suc-save-loc{font-size:10px;color:var(--text-muted);margin-bottom:26px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
         .loc-badge{padding:3px 10px;border-radius:10px;font-size:9px;font-weight:600}
         .loc-badge.local{background:rgba(10,36,99,0.08);color:var(--primary)}
         .loc-badge.drive{background:rgba(22,163,74,0.1);color:var(--success)}
@@ -255,6 +255,8 @@
 
         let capturedData = null, camStream = null, facingMode = 'environment';
         let currentLat = null, currentLng = null, gpsReady = false;
+        let currentLocationName = null; // जगह का नाम
+        let geoFetchTimer = null; // debounce timer
         let isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
 
         const $ = id => document.getElementById(id);
@@ -268,19 +270,193 @@
 
         if (!isHTTPS) $('httpsWarn').classList.add('show');
 
+        /* ========== जगह का नाम निकालने का फंक्शन (Reverse Geocoding) ========== */
+        function parseGeoName(data) {
+            const a = data.address || {};
+            const parts = [];
+            // पहले छोटा इलाका
+            if (a.village) parts.push(a.village);
+            else if (a.suburb) parts.push(a.suburb);
+            else if (a.locality) parts.push(a.locality);
+            else if (a.neighbourhood) parts.push(a.neighbourhood);
+            else if (a.hamlet) parts.push(a.hamlet);
+            // फिर शहर/कस्बा
+            if (a.city && !parts.includes(a.city)) parts.push(a.city);
+            else if (a.town && !parts.includes(a.town)) parts.push(a.town);
+            else if (a.state_district && !parts.includes(a.state_district)) parts.push(a.state_district);
+            // फिर जिला
+            if (a.county && !parts.includes(a.county)) parts.push(a.county);
+            // फिर राज्य
+            if (a.state && !parts.includes(a.state)) parts.push(a.state);
+            return parts.length > 0 ? parts.join(', ') : (data.display_name || 'N/A');
+        }
+
+        function fetchLocationName(lat, lng) {
+            // Nominatim API से जगह का नाम लाएं (debounce - 5 सेकंड)
+            clearTimeout(geoFetchTimer);
+            geoFetchTimer = setTimeout(async () => {
+                try {
+                    const url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=hi,en&zoom=16';
+                    const res = await fetch(url, { headers: { 'User-Agent': 'DVVNL-CrossCheck-App/1.0' } });
+                    const data = await res.json();
+                    if (data && data.display_name) {
+                        currentLocationName = parseGeoName(data);
+                    } else {
+                        currentLocationName = null;
+                    }
+                } catch (e) {
+                    currentLocationName = null;
+                }
+            }, 2000);
+        }
+
+        /* ========== GPS शुरू करें ========== */
         function startGPS() {
-            if (!navigator.geolocation) return;
-            if (!isHTTPS) return;
+            if (!navigator.geolocation || !isHTTPS) return;
             const onPos = pos => {
                 currentLat = pos.coords.latitude;
                 currentLng = pos.coords.longitude;
                 gpsReady = true;
+                // जगह का नाम लाएं (सिर्फ पहली बार या 50m से ज्यादा बदले तो)
+                fetchLocationName(currentLat, currentLng);
             };
             navigator.geolocation.getCurrentPosition(onPos, () => {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
             navigator.geolocation.watchPosition(onPos, () => {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
         }
         startGPS();
 
+        /* ========== Canvas पर पिन आइकन बनाने का फंक्शन ========== */
+        function drawPinIcon(ctx, x, y, size) {
+            const s = size;
+            ctx.save();
+            // पिन का आकार
+            ctx.beginPath();
+            ctx.moveTo(x, y + s * 0.9);
+            ctx.bezierCurveTo(x - s * 0.55, y + s * 0.35, x - s * 0.5, y - s * 0.15, x, y - s * 0.5);
+            ctx.bezierCurveTo(x + s * 0.5, y - s * 0.15, x + s * 0.55, y + s * 0.35, x, y + s * 0.9);
+            ctx.closePath();
+            ctx.fillStyle = '#f0c040';
+            ctx.fill();
+            // अंदर का सफेद गोल
+            ctx.beginPath();
+            ctx.arc(x, y - s * 0.1, s * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#0a2463';
+            ctx.fill();
+            ctx.restore();
+        }
+
+        /* ========== Canvas पर टेक्स्ट ट्रंकेट करने का फंक्शन ========== */
+        function truncateText(ctx, text, maxWidth) {
+            if (ctx.measureText(text).width <= maxWidth) return text;
+            let t = text;
+            while (t.length > 3 && ctx.measureText(t + '...').width > maxWidth) {
+                t = t.slice(0, -1);
+            }
+            return t + '...';
+        }
+
+        /* ========== स्टैम्प बनाने का फंक्शन (अपडेटेड) ========== */
+        function drawStamp(ctx, w, h) {
+            const now = new Date();
+            const ds = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const ts = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
+
+            // बार की हाइट - 4 लाइन के लिए ज्यादा जगह
+            const barH = Math.max(80, Math.round(h * 0.11));
+            const barY = h - barH;
+
+            // डार्क बैकग्राउंड
+            ctx.fillStyle = 'rgba(0,0,0,0.82)';
+            ctx.fillRect(0, barY, w, barH);
+
+            // ऊपर गोल्ड लाइन
+            ctx.fillStyle = '#d4a017';
+            ctx.fillRect(0, barY, w, 2);
+
+            // फॉन्ट साइज़ (छवि की चौड़ाई के अनुपात में)
+            const fsLoc = Math.max(13, Math.round(w * 0.03));   // लोकेशन नाम
+            const fsBrand = Math.max(12, Math.round(w * 0.028)); // DVVNL
+            const fsDT = Math.max(12, Math.round(w * 0.028));    // Date Time
+            const fsGPS = Math.max(11, Math.round(w * 0.024));   // GPS / Acct
+
+            const lineGap = Math.max(4, Math.round(h * 0.006));
+            const padX = 10;
+            const textW = w - padX * 2;
+
+            // ---- लाइन 1: लोकेशन नाम (पिन आइकन + नाम) ----
+            let locText = 'Location: Fetching...';
+            if (currentLocationName) {
+                locText = currentLocationName;
+            } else if (!gpsReady) {
+                locText = 'Location: N/A';
+            }
+
+            ctx.font = 'bold ' + fsLoc + 'px Arial, sans-serif';
+            ctx.fillStyle = '#f0c040';
+
+            // पिन आइकन बनाएं
+            const pinSize = fsLoc * 1.3;
+            const pinX = padX + pinSize * 0.35;
+            const pinY = barY + pinSize * 0.55 + 4;
+            drawPinIcon(ctx, pinX, pinY, pinSize);
+
+            // लोकेशन टेक्स्ट (पिन के बाद)
+            const locStartX = padX + pinSize * 0.9;
+            const locMaxW = textW - pinSize * 0.9;
+            const locDisplay = truncateText(ctx, locText, locMaxW);
+            ctx.textAlign = 'left';
+            ctx.fillText(locDisplay, locStartX, barY + fsLoc + 6);
+
+            // ---- लाइन 2: DVVNL (बाएं) | Date & Time (दाएं) ----
+            const line2Y = barY + fsLoc + 6 + fsBrand + lineGap + 2;
+
+            ctx.font = 'bold ' + fsBrand + 'px Arial, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'left';
+            ctx.fillText('DVVNL', padX, line2Y);
+
+            ctx.font = 'bold ' + fsDT + 'px Arial, sans-serif';
+            ctx.fillStyle = '#f0c040';
+            ctx.textAlign = 'right';
+            ctx.fillText(ds + '  ' + ts, w - padX, line2Y);
+            ctx.textAlign = 'left';
+
+            // ---- लाइन 3: Lat, Long (बाएं) | Acct (दाएं) ----
+            const line3Y = line2Y + fsGPS + lineGap + 2;
+
+            ctx.font = fsGPS + 'px Arial, sans-serif';
+            ctx.fillStyle = '#cccccc';
+            ctx.textAlign = 'left';
+
+            if (gpsReady && currentLat !== null) {
+                const latStr = 'Lat: ' + currentLat.toFixed(6) + '\u00B0';
+                const longStr = 'Long: ' + currentLng.toFixed(6) + '\u00B0';
+                ctx.fillText(latStr, padX, line3Y);
+
+                // Long बीच में या दाएं
+                const latW = ctx.measureText(latStr).width;
+                const gapBetween = Math.max(14, Math.round(w * 0.03));
+                ctx.fillText(longStr, padX + latW + gapBetween, line3Y);
+            } else {
+                ctx.fillText('GPS: N/A', padX, line3Y);
+            }
+
+            // Acct ID दाएं तरफ
+            var acct = acctIn.value.trim();
+            if (acct) {
+                ctx.font = 'bold ' + fsGPS + 'px Arial, sans-serif';
+                ctx.fillStyle = '#a0a0a0';
+                ctx.textAlign = 'right';
+                ctx.fillText('Acct: ' + acct, w - padX, line3Y);
+                ctx.textAlign = 'left';
+            }
+
+            // नीचे एक पतली गोल्ड लाइन
+            ctx.fillStyle = 'rgba(212,160,23,0.3)';
+            ctx.fillRect(0, barY + barH - 1, w, 1);
+        }
+
+        /* ========== शेष सब कुछ (पहले जैसा) ========== */
         $('camBtn').addEventListener('click', () => {
             if (!isHTTPS) { showToast('HTTPS पर कैमरा नहीं चलेगी। गैलरी से फोटो चुनें।'); return; }
             openCam();
@@ -306,51 +482,6 @@
                 reader.readAsDataURL(this.files[0]);
             }
         });
-
-        function drawStamp(ctx, w, h) {
-            const now = new Date();
-            const ds = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const ts = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
-
-            const barH = Math.max(50, Math.round(h * 0.075));
-            const barY = h - barH;
-
-            ctx.fillStyle = 'rgba(0,0,0,0.78)';
-            ctx.fillRect(0, barY, w, barH);
-
-            ctx.fillStyle = '#d4a017';
-            ctx.fillRect(0, barY, w, 2);
-
-            const fs1 = Math.max(13, Math.round(w * 0.032));
-            const fs2 = Math.max(11, Math.round(w * 0.026));
-            const fs3 = Math.max(10, Math.round(w * 0.024));
-
-            ctx.font = 'bold ' + fs1 + 'px Arial, sans-serif';
-            ctx.fillStyle = '#ffffff';
-            ctx.fillText('DVVNL', 10, barY + fs1 + 6);
-
-            ctx.font = 'bold ' + fs1 + 'px Arial, sans-serif';
-            ctx.fillStyle = '#f0c040';
-            ctx.textAlign = 'right';
-            ctx.fillText(ds + '  ' + ts, w - 10, barY + fs1 + 6);
-            ctx.textAlign = 'left';
-
-            ctx.font = fs2 + 'px Arial, sans-serif';
-            ctx.fillStyle = '#cccccc';
-            if (gpsReady && currentLat !== null) {
-                ctx.fillText('Lat ' + currentLat.toFixed(6) + '\u00B0', 10, barY + fs1 + 6 + fs2 + 4);
-                ctx.fillText('Long ' + currentLng.toFixed(6) + '\u00B0', 10 + w * 0.42, barY + fs1 + 6 + fs2 + 4);
-            } else {
-                ctx.fillText('GPS: N/A', 10, barY + fs1 + 6 + fs2 + 4);
-            }
-
-            var acct = acctIn.value.trim();
-            if (acct) {
-                ctx.font = 'bold ' + fs3 + 'px Arial, sans-serif';
-                ctx.fillStyle = '#a0a0a0';
-                ctx.fillText('Acct: ' + acct, 10, barY + fs1 + 6 + fs2 + 4 + fs3 + 3);
-            }
-        }
 
         function showPreview() {
             prevImg.src = capturedData;
@@ -430,8 +561,9 @@
 
             const entry = {
                 acctId: acct, remarks: remSel.value,
-                latitude: currentLat, longitude: currentLng, dateTime: fullDT,
-                timestamp: now.getTime(), photo: capturedData
+                latitude: currentLat, longitude: currentLng,
+                locationName: currentLocationName || 'N/A',
+                dateTime: fullDT, timestamp: now.getTime(), photo: capturedData
             };
 
             let savedLocal = false, savedDrive = false, driveMsg = '';
