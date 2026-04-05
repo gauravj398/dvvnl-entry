@@ -255,10 +255,17 @@
 
         let capturedData = null, camStream = null, facingMode = 'environment';
         let currentLat = null, currentLng = null, gpsReady = false;
+        let currentAccuracy = Infinity; /* मीटर में — कम = ज़्यादा सही */
         let currentLocationName = null;
         let locNamePromise = null;
         let locNameDone = false;
+        let lastFetchedLat = null, lastFetchedLng = null;
         let isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
+
+        /* GPS accuracy 80 मीटर से कम होने पर ही गांव का नाम दिखाएगा
+           80 मीटर से ज़्यादा हो तो सिर्फ Lat/Long दिखाएगा
+           ताकि गलत गांव का नाम न आए */
+        var ACCURACY_THRESHOLD = 80;
 
         const $ = id => document.getElementById(id);
         const acctIn = $('acctId'), remSel = $('remarks');
@@ -277,35 +284,42 @@
             var parts = [];
             var seen = {};
 
-            // Village — सबसे पहले छोटी इकाई
+            /* Village — सबसे छोटी इकाई */
             var village = a.village || a.hamlet || a.locality || a.suburb || a.neighbourhood || '';
             if (village && !seen[village]) { parts.push(village); seen[village] = true; }
 
-            // City / Town
+            /* City / Town */
             var city = a.city || a.town || a.municipality || a.city_district || '';
             if (city && !seen[city]) { parts.push(city); seen[city] = true; }
 
-            // District — Nominatim में ये कई नाम से आता है
+            /* District — Nominatim में कई नामों से आता है */
             var district = a.state_district || a.county || a.district || a.administrative || '';
             if (district && !seen[district]) { parts.push(district); seen[district] = true; }
 
-            // State
+            /* State */
             var state = a.state || '';
             if (state && !seen[state]) { parts.push(state); seen[state] = true; }
 
             if (parts.length > 0) return parts.join(', ');
 
-            // अगर कुछ ना मिला तो display_name का इस्तेमाल
+            /* फॉलबैक */
             if (data.display_name) return data.display_name.split(',').slice(0, 4).join(',').trim();
             return null;
         }
 
         function fetchLocationName(lat, lng) {
-            if (locNamePromise) return locNamePromise;
+            /* अगर पहले से इन्हीं कॉर्डिनेट्स पर fetch हो चुका है तो दोबारा नहीं */
+            if (lastFetchedLat === lat && lastFetchedLng === lng && locNamePromise) return locNamePromise;
+            lastFetchedLat = lat;
+            lastFetchedLng = lng;
+            locNameDone = false;
+            currentLocationName = null;
+
             locNamePromise = new Promise(function (resolve) {
                 var controller = new AbortController();
                 var timeoutId = setTimeout(function () { controller.abort(); }, 10000);
-                fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=hi,en&zoom=16&addressdetails=1', {
+                /* zoom=18 सबसे specific रिजल्ट देता है — building/plot level */
+                fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=hi,en&zoom=18&addressdetails=1', {
                     headers: { 'User-Agent': 'DVVNL-CrossCheck-App/1.0' },
                     signal: controller.signal
                 })
@@ -320,18 +334,42 @@
             return locNamePromise;
         }
 
-        /* ========== GPS शुरू ========== */
+        /* ========== GPS शुरू — accuracy check के साथ ========== */
         function startGPS() {
             if (!navigator.geolocation || !isHTTPS) return;
-            var firstFix = true;
+
             function onPos(pos) {
-                currentLat = pos.coords.latitude;
-                currentLng = pos.coords.longitude;
-                gpsReady = true;
-                if (firstFix) { firstFix = false; fetchLocationName(currentLat, currentLng); }
+                var acc = pos.coords.accuracy;
+
+                /* सिर्फ तब update करें जब ये reading पहले से ज़्यादा accurate हो */
+                if (acc < currentAccuracy) {
+                    currentLat = pos.coords.latitude;
+                    currentLng = pos.coords.longitude;
+                    currentAccuracy = acc;
+
+                    /* GPS ready — coordinates मिल गए */
+                    gpsReady = true;
+
+                    /* अगर accuracy 80 मीटर से कम है और पहले इन कॉर्डिनेट्स पर fetch नहीं हुआ */
+                    if (acc <= ACCURACY_THRESHOLD) {
+                        fetchLocationName(currentLat, currentLng);
+                    } else {
+                        /* Accuracy बहुत खराब है — गांव का नाम मत लाओ, गलत आएगा */
+                        currentLocationName = null;
+                        locNameDone = true;
+                    }
+                }
             }
-            navigator.geolocation.getCurrentPosition(onPos, function () {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
-            navigator.geolocation.watchPosition(onPos, function () {}, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+
+            /* पहली बार जल्दी reading लाने के लिए */
+            navigator.geolocation.getCurrentPosition(onPos, function () {}, {
+                enableHighAccuracy: true, timeout: 15000, maximumAge: 0
+            });
+
+            /* बेहतर accuracy के लिए लगातार watch करते रहें */
+            navigator.geolocation.watchPosition(onPos, function () {}, {
+                enableHighAccuracy: true, timeout: 30000, maximumAge: 0
+            });
         }
         startGPS();
 
@@ -343,7 +381,7 @@
             return t + '...';
         }
 
-        /* ========== स्टैम्प — DVVNL हटाया, 4 लाइन ========== */
+        /* ========== स्टैम्प ========== */
         function drawStamp(ctx, w, h) {
             var now = new Date();
             var dayName = now.toLocaleDateString('en-IN', { weekday: 'long' });
@@ -368,12 +406,19 @@
             var padX = 12;
             var textW = w - padX * 2;
 
-            // ---- लाइन 1: Village, City, District, State ----
+            /* ---- लाइन 1: Location ----
+               सिर्फ तब गांव का नाम दिखाओ जब:
+               1. GPS accuracy 80 मीटर से कम हो
+               2. Nominatim से नाम आया हो
+               वरना Lat/Long दिखाओ (ताकि गलत गांव का नाम न आए) */
             var locText = '';
-            if (currentLocationName) {
+            if (gpsReady && currentAccuracy <= ACCURACY_THRESHOLD && currentLocationName) {
                 locText = currentLocationName;
             } else if (gpsReady && currentLat !== null) {
                 locText = 'Lat: ' + currentLat.toFixed(6) + '\u00B0, Long: ' + currentLng.toFixed(6) + '\u00B0';
+                if (currentAccuracy < 9999) {
+                    locText += '  (\u00B1' + Math.round(currentAccuracy) + 'm)';
+                }
             } else {
                 locText = 'Location: N/A';
             }
@@ -382,14 +427,14 @@
             ctx.textAlign = 'left';
             ctx.fillText(truncateText(ctx, locText, textW), padX, barY + fsLoc + 8);
 
-            // ---- लाइन 2: Day, Date, Time (पूरी चौड़ाई में) ----
+            /* ---- लाइन 2: Day, Date, Time ---- */
             var line2Y = barY + fsLoc + 8 + fsDT + lineGap + 2;
             ctx.font = 'bold ' + fsDT + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'left';
             ctx.fillText(truncateText(ctx, fullDT, textW), padX, line2Y);
 
-            // ---- लाइन 3: Lat & Long (कम गैप) ----
+            /* ---- लाइन 3: Lat & Long (कम गैप) ---- */
             var line3Y = line2Y + fsGPS + lineGap + 2;
             ctx.font = 'bold ' + fsGPS + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
@@ -404,7 +449,7 @@
                 ctx.fillText('GPS: N/A', padX, line3Y);
             }
 
-            // ---- लाइन 4: Acct ID ----
+            /* ---- लाइन 4: Acct ID ---- */
             var acct = acctIn.value.trim();
             if (acct) {
                 var line4Y = line3Y + fsAcct + lineGap + 2;
@@ -420,7 +465,8 @@
 
         /* ========== फोटो कैप्चर ========== */
         async function doCapture(sourceCanvas) {
-            if (gpsReady && !locNameDone && locNamePromise) {
+            /* अगर location fetch चल रहा है तो उसके पूरा होने तक रुको (max 3 सेकंड) */
+            if (locNamePromise && !locNameDone) {
                 await Promise.race([
                     locNamePromise,
                     new Promise(function (r) { setTimeout(r, 3000); })
@@ -532,10 +578,21 @@
             var fullDT = ds2 + ' | ' + ts2;
             var acct = acctIn.value.trim();
 
+            /* जो location दिख रहा है स्टैम्प में वही सेव होगा */
+            var stampLocText = '';
+            if (gpsReady && currentAccuracy <= ACCURACY_THRESHOLD && currentLocationName) {
+                stampLocText = currentLocationName;
+            } else if (gpsReady && currentLat !== null) {
+                stampLocText = 'Lat: ' + currentLat.toFixed(6) + ', Long: ' + currentLng.toFixed(6) + ' (\u00B1' + Math.round(currentAccuracy) + 'm)';
+            } else {
+                stampLocText = 'N/A';
+            }
+
             var entry = {
                 acctId: acct, remarks: remSel.value,
                 latitude: currentLat, longitude: currentLng,
-                locationName: currentLocationName || 'N/A',
+                gpsAccuracy: Math.round(currentAccuracy),
+                locationName: stampLocText,
                 dateTime: fullDT, timestamp: now.getTime(), photo: capturedData
             };
 
