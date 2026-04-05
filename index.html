@@ -271,21 +271,27 @@
 
         if (!isHTTPS) $('httpsWarn').classList.add('show');
 
-        /* ========== जगह का नाम लाना ========== */
+        /* ========== जगह का नाम — सिर्फ Village, City, State ========== */
         function parseGeoName(data) {
-            const a = data.address || {};
-            const parts = [];
+            var a = data.address || {};
+            var parts = [];
+
+            // Village / Locality
             if (a.village) parts.push(a.village);
-            else if (a.suburb) parts.push(a.suburb);
             else if (a.locality) parts.push(a.locality);
-            else if (a.neighbourhood) parts.push(a.neighbourhood);
+            else if (a.suburb) parts.push(a.suburb);
             else if (a.hamlet) parts.push(a.hamlet);
-            if (a.city && !parts.includes(a.city)) parts.push(a.city);
-            else if (a.town && !parts.includes(a.town)) parts.push(a.town);
-            else if (a.state_district && !parts.includes(a.state_district)) parts.push(a.state_district);
-            if (a.county && !parts.includes(a.county)) parts.push(a.county);
-            if (a.state && !parts.includes(a.state)) parts.push(a.state);
+
+            // City / Town
+            if (a.city) parts.push(a.city);
+            else if (a.town) parts.push(a.town);
+
+            // State
+            if (a.state) parts.push(a.state);
+
             if (parts.length > 0) return parts.join(', ');
+
+            // फॉलबैक — display_name से पहले 3 हिस्से
             if (data.display_name) return data.display_name.split(',').slice(0, 3).join(',').trim();
             return null;
         }
@@ -333,17 +339,22 @@
             return t + '...';
         }
 
-        /* ========== स्टैम्प (लाइट बैकग्राउंड, कोई पिन नहीं, 4 लाइन) ========== */
+        /* ========== स्टैम्प — Village, City, State | Day, Date, Time | कम गैप Lat/Long ========== */
         function drawStamp(ctx, w, h) {
             var now = new Date();
+
+            // Day name जोड़ा — जैसे "Monday"
+            var dayName = now.toLocaleDateString('en-IN', { weekday: 'long' });
             var ds = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
             var ts = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
+            // फॉर्मेट: "Monday, 01/06/2025, 02:30:45 PM"
+            var fullDT = dayName + ', ' + ds + ', ' + ts;
 
-            // 4 लाइनों के लिए बार हाइट
+            // बार हाइट
             var barH = Math.max(140, Math.round(h * 0.18));
             var barY = h - barH;
 
-            // हल्का बैकग्राउंड — फोटो पीछे से हल्की दिखे
+            // हल्का बैकग्राउंड
             ctx.fillStyle = 'rgba(0,0,0,0.45)';
             ctx.fillRect(0, barY, w, barH);
 
@@ -354,14 +365,14 @@
             // फॉन्ट साइज़
             var fsLoc = Math.max(19, Math.round(w * 0.042));
             var fsBrand = Math.max(17, Math.round(w * 0.038));
-            var fsDT = Math.max(17, Math.round(w * 0.038));
+            var fsDT = Math.max(16, Math.round(w * 0.034));
             var fsGPS = Math.max(15, Math.round(w * 0.034));
             var fsAcct = Math.max(15, Math.round(w * 0.034));
             var lineGap = Math.max(6, Math.round(h * 0.008));
             var padX = 12;
             var textW = w - padX * 2;
 
-            // ---- लाइन 1: जगह का नाम (कोई आइकन नहीं) ----
+            // ---- लाइन 1: Village, City, State ----
             var locText = '';
             if (currentLocationName) {
                 locText = currentLocationName;
@@ -376,7 +387,7 @@
             ctx.textAlign = 'left';
             ctx.fillText(truncateText(ctx, locText, textW), padX, barY + fsLoc + 8);
 
-            // ---- लाइन 2: DVVNL (बाएं) + Date & Time (दाएं) ----
+            // ---- लाइन 2: DVVNL (बाएं) + Day, Date, Time (दाएं) ----
             var line2Y = barY + fsLoc + 8 + fsBrand + lineGap + 2;
 
             ctx.font = 'bold ' + fsBrand + 'px Arial, sans-serif';
@@ -387,10 +398,10 @@
             ctx.font = 'bold ' + fsDT + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'right';
-            ctx.fillText(ds + '  ' + ts, w - padX, line2Y);
+            ctx.fillText(truncateText(ctx, fullDT, textW * 0.62), w - padX, line2Y);
             ctx.textAlign = 'left';
 
-            // ---- लाइन 3: Lat & Long (पूरी चौड़ाई में) ----
+            // ---- लाइन 3: Lat & Long (बहुत कम गैप) ----
             var line3Y = line2Y + fsGPS + lineGap + 2;
             ctx.font = 'bold ' + fsGPS + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
@@ -401,13 +412,13 @@
                 var longStr = 'Long: ' + currentLng.toFixed(6) + '\u00B0';
                 ctx.fillText(latStr, padX, line3Y);
                 var latW = ctx.measureText(latStr).width;
-                var gapB = Math.max(20, Math.round(w * 0.045));
-                ctx.fillText(longStr, padX + latW + gapB, line3Y);
+                // गैप बहुत कम — सिर्फ 12px
+                ctx.fillText(longStr, padX + latW + 12, line3Y);
             } else {
                 ctx.fillText('GPS: N/A', padX, line3Y);
             }
 
-            // ---- लाइन 4: Acct ID (अलग लाइन, बाएं) ----
+            // ---- लाइन 4: Acct ID ----
             var acct = acctIn.value.trim();
             if (acct) {
                 var line4Y = line3Y + fsAcct + lineGap + 2;
