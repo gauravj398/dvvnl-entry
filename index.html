@@ -52,10 +52,11 @@
         .req{color:var(--danger)}
         .input-wrap{position:relative}
         .input-wrap i.fi{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none;transition:color 0.3s}
-        .input-wrap input,.input-wrap select{width:100%;padding:12px 12px 12px 38px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;color:var(--text);background:#f7f8fa;border:1.5px solid var(--border);border-radius:10px;outline:none;transition:all 0.25s;appearance:none;-webkit-appearance:none}
-        .input-wrap input::placeholder{color:#b0b7c0;font-weight:400}
-        .input-wrap input:focus,.input-wrap select:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(10,36,99,0.06)}
-        .input-wrap input:focus~i.fi,.input-wrap select:focus~i.fi{color:var(--primary)}
+        .input-wrap input,.input-wrap select,.input-wrap textarea{width:100%;padding:12px 12px 12px 38px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;color:var(--text);background:#f7f8fa;border:1.5px solid var(--border);border-radius:10px;outline:none;transition:all 0.25s;appearance:none;-webkit-appearance:none;resize:vertical}
+        .input-wrap textarea{min-height:70px;line-height:1.5}
+        .input-wrap input::placeholder,.input-wrap textarea::placeholder{color:#b0b7c0;font-weight:400}
+        .input-wrap input:focus,.input-wrap select:focus,.input-wrap textarea:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(10,36,99,0.06)}
+        .input-wrap input:focus~i.fi,.input-wrap select:focus~i.fi,.input-wrap textarea:focus~i.fi{color:var(--primary)}
         .select-wrap{position:relative}
         .select-wrap::after{content:'\f107';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:12px}
         .select-wrap select{padding-right:36px;cursor:pointer}
@@ -81,6 +82,8 @@
         .captured-img img{width:100%;display:block;border-radius:10px}
         .retake-btn{display:none;margin-top:8px;padding:7px 18px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--primary);background:rgba(10,36,99,0.06);border:1.5px solid var(--primary);border-radius:8px;cursor:pointer;transition:all 0.25s}
         .retake-btn:active{background:var(--primary);color:#fff}
+
+        .optional-tag{display:inline-block;font-size:9px;font-weight:500;color:var(--text-muted);background:rgba(107,114,128,0.08);padding:1px 7px;border-radius:6px;margin-left:6px;vertical-align:middle;letter-spacing:0.3px}
 
         .submit-btn{width:100%;padding:14px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:12px;cursor:pointer;box-shadow:0 3px 12px rgba(10,36,99,0.25);transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
         .submit-btn:active{transform:scale(0.97)}
@@ -211,6 +214,16 @@
                         <div class="field-error" id="errPhoto"><i class="fas fa-circle-exclamation"></i> फोटो चुनना अनिवार्य है</div>
                     </div>
 
+                    <div class="field-group">
+                        <label for="addRemarks">Additional Remarks <span class="optional-tag">Optional</span>
+                            <span class="hindi">अतिरिक्त टिप्पणी (छोड़ भी सकते हैं)</span>
+                        </label>
+                        <div class="input-wrap">
+                            <textarea id="addRemarks" placeholder="कोई अतिरिक्त जानकारी लिखें..." rows="2"></textarea>
+                            <i class="fas fa-comment-dots fi" style="top:18px;transform:none"></i>
+                        </div>
+                    </div>
+
                     <button type="submit" class="submit-btn" id="submitBtn">
                         <i class="fas fa-paper-plane"></i> Submit Entry
                     </button>
@@ -251,30 +264,26 @@
     <div class="toast-msg" id="toastEl"><i class="fas fa-triangle-exclamation"></i><span id="toastText"></span></div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzljXcVApshV8imjW7p9q3TsM5wRMaHHXJa5QXr8R8kD82IS_WFET4KNubMsGq6w5hV/exec';
+        var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzljXcVApshV8imjW7p9q3TsM5wRMaHHXJa5QXr8R8kD82IS_WFET4KNubMsGq6w5hV/exec';
 
-        let capturedData = null, camStream = null, facingMode = 'environment';
-        let currentLat = null, currentLng = null, gpsReady = false;
-        let currentAccuracy = Infinity; /* मीटर में — कम = ज़्यादा सही */
-        let currentLocationName = null;
-        let locNamePromise = null;
-        let locNameDone = false;
-        let lastFetchedLat = null, lastFetchedLng = null;
-        let isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
-
-        /* GPS accuracy 80 मीटर से कम होने पर ही गांव का नाम दिखाएगा
-           80 मीटर से ज़्यादा हो तो सिर्फ Lat/Long दिखाएगा
-           ताकि गलत गांव का नाम न आए */
+        var capturedData = null, camStream = null, facingMode = 'environment';
+        var currentLat = null, currentLng = null, gpsReady = false;
+        var currentAccuracy = Infinity;
+        var currentLocationName = null;
+        var locNamePromise = null;
+        var locNameDone = false;
+        var lastFetchedLat = null, lastFetchedLng = null;
+        var isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
         var ACCURACY_THRESHOLD = 80;
 
-        const $ = id => document.getElementById(id);
-        const acctIn = $('acctId'), remSel = $('remarks');
-        const photoArea = $('photoArea'), phHolder = $('phPlaceholder');
-        const captImg = $('capturedImg'), prevImg = $('prevImg'), retakeBtn = $('retakeBtn');
-        const camModal = $('camModal'), camVideo = $('camVideo'), camCanvas = $('camCanvas');
-        const formBody = $('formBody'), sucScreen = $('successScreen');
-        const formHdr = $('formHeader'), formCard = $('formCard');
-        const fileInput = $('fileInput');
+        var $ = function(id) { return document.getElementById(id); };
+        var acctIn = $('acctId'), remSel = $('remarks'), addRemIn = $('addRemarks');
+        var photoArea = $('photoArea'), phHolder = $('phPlaceholder');
+        var captImg = $('capturedImg'), prevImg = $('prevImg'), retakeBtn = $('retakeBtn');
+        var camModal = $('camModal'), camVideo = $('camVideo'), camCanvas = $('camCanvas');
+        var formBody = $('formBody'), sucScreen = $('successScreen');
+        var formHdr = $('formHeader'), formCard = $('formCard');
+        var fileInput = $('fileInput');
 
         if (!isHTTPS) $('httpsWarn').classList.add('show');
 
@@ -283,218 +292,93 @@
             var a = data.address || {};
             var parts = [];
             var seen = {};
-
-            /* Village — सबसे छोटी इकाई */
             var village = a.village || a.hamlet || a.locality || a.suburb || a.neighbourhood || '';
             if (village && !seen[village]) { parts.push(village); seen[village] = true; }
-
-            /* City / Town */
             var city = a.city || a.town || a.municipality || a.city_district || '';
             if (city && !seen[city]) { parts.push(city); seen[city] = true; }
-
-            /* District — Nominatim में कई नामों से आता है */
             var district = a.state_district || a.county || a.district || a.administrative || '';
             if (district && !seen[district]) { parts.push(district); seen[district] = true; }
-
-            /* State */
             var state = a.state || '';
             if (state && !seen[state]) { parts.push(state); seen[state] = true; }
-
             if (parts.length > 0) return parts.join(', ');
-
-            /* फॉलबैक */
             if (data.display_name) return data.display_name.split(',').slice(0, 4).join(',').trim();
             return null;
         }
 
         function fetchLocationName(lat, lng) {
-            /* अगर पहले से इन्हीं कॉर्डिनेट्स पर fetch हो चुका है तो दोबारा नहीं */
             if (lastFetchedLat === lat && lastFetchedLng === lng && locNamePromise) return locNamePromise;
             lastFetchedLat = lat;
             lastFetchedLng = lng;
             locNameDone = false;
             currentLocationName = null;
-
-            locNamePromise = new Promise(function (resolve) {
+            locNamePromise = new Promise(function(resolve) {
                 var controller = new AbortController();
-                var timeoutId = setTimeout(function () { controller.abort(); }, 10000);
-                /* zoom=18 सबसे specific रिजल्ट देता है — building/plot level */
+                var timeoutId = setTimeout(function() { controller.abort(); }, 10000);
                 fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&accept-language=hi,en&zoom=18&addressdetails=1', {
                     headers: { 'User-Agent': 'DVVNL-CrossCheck-App/1.0' },
                     signal: controller.signal
                 })
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
                     clearTimeout(timeoutId);
                     if (data && data.display_name) currentLocationName = parseGeoName(data);
                 })
-                .catch(function () { clearTimeout(timeoutId); })
-                .finally(function () { locNameDone = true; resolve(); });
+                .catch(function() { clearTimeout(timeoutId); })
+                .finally(function() { locNameDone = true; resolve(); });
             });
             return locNamePromise;
         }
 
-        /* ========== GPS शुरू — accuracy check के साथ ========== */
+        /* ========== GPS शुरू ========== */
         function startGPS() {
             if (!navigator.geolocation || !isHTTPS) return;
-
             function onPos(pos) {
                 var acc = pos.coords.accuracy;
-
-                /* सिर्फ तब update करें जब ये reading पहले से ज़्यादा accurate हो */
                 if (acc < currentAccuracy) {
                     currentLat = pos.coords.latitude;
                     currentLng = pos.coords.longitude;
                     currentAccuracy = acc;
-
-                    /* GPS ready — coordinates मिल गए */
                     gpsReady = true;
-
-                    /* अगर accuracy 80 मीटर से कम है और पहले इन कॉर्डिनेट्स पर fetch नहीं हुआ */
                     if (acc <= ACCURACY_THRESHOLD) {
                         fetchLocationName(currentLat, currentLng);
                     } else {
-                        /* Accuracy बहुत खराब है — गांव का नाम मत लाओ, गलत आएगा */
                         currentLocationName = null;
                         locNameDone = true;
                     }
                 }
             }
-
-            /* पहली बार जल्दी reading लाने के लिए */
-            navigator.geolocation.getCurrentPosition(onPos, function () {}, {
+            navigator.geolocation.getCurrentPosition(onPos, function(){}, {
                 enableHighAccuracy: true, timeout: 15000, maximumAge: 0
             });
-
-            /* बेहतर accuracy के लिए लगातार watch करते रहें */
-            navigator.geolocation.watchPosition(onPos, function () {}, {
+            navigator.geolocation.watchPosition(onPos, function(){}, {
                 enableHighAccuracy: true, timeout: 30000, maximumAge: 0
             });
         }
         startGPS();
 
-        /* ========== टेक्स्ट ट्रंकेट ========== */
-        function truncateText(ctx, text, maxWidth) {
-            if (ctx.measureText(text).width <= maxWidth) return text;
-            var t = text;
-            while (t.length > 3 && ctx.measureText(t + '...').width > maxWidth) t = t.slice(0, -1);
-            return t + '...';
-        }
-
-        /* ========== स्टैम्प ========== */
-        function drawStamp(ctx, w, h) {
-            var now = new Date();
-            var dayName = now.toLocaleDateString('en-IN', { weekday: 'long' });
-            var ds = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            var ts = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
-            var fullDT = dayName + ', ' + ds + ', ' + ts;
-
-            var barH = Math.max(120, Math.round(h * 0.15));
-            var barY = h - barH;
-
-            ctx.fillStyle = 'rgba(0,0,0,0.45)';
-            ctx.fillRect(0, barY, w, barH);
-
-            ctx.fillStyle = '#d4a017';
-            ctx.fillRect(0, barY, w, 3);
-
-            var fsLoc = Math.max(18, Math.round(w * 0.04));
-            var fsDT = Math.max(16, Math.round(w * 0.034));
-            var fsGPS = Math.max(14, Math.round(w * 0.032));
-            var fsAcct = Math.max(14, Math.round(w * 0.032));
-            var lineGap = Math.max(5, Math.round(h * 0.007));
-            var padX = 12;
-            var textW = w - padX * 2;
-
-            /* ---- लाइन 1: Location ----
-               सिर्फ तब गांव का नाम दिखाओ जब:
-               1. GPS accuracy 80 मीटर से कम हो
-               2. Nominatim से नाम आया हो
-               वरना Lat/Long दिखाओ (ताकि गलत गांव का नाम न आए) */
-            var locText = '';
-            if (gpsReady && currentAccuracy <= ACCURACY_THRESHOLD && currentLocationName) {
-                locText = currentLocationName;
-            } else if (gpsReady && currentLat !== null) {
-                locText = 'Lat: ' + currentLat.toFixed(6) + '\u00B0, Long: ' + currentLng.toFixed(6) + '\u00B0';
-                if (currentAccuracy < 9999) {
-                    locText += '  (\u00B1' + Math.round(currentAccuracy) + 'm)';
-                }
-            } else {
-                locText = 'Location: N/A';
-            }
-            ctx.font = 'bold ' + fsLoc + 'px Arial, sans-serif';
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'left';
-            ctx.fillText(truncateText(ctx, locText, textW), padX, barY + fsLoc + 8);
-
-            /* ---- लाइन 2: Day, Date, Time ---- */
-            var line2Y = barY + fsLoc + 8 + fsDT + lineGap + 2;
-            ctx.font = 'bold ' + fsDT + 'px Arial, sans-serif';
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'left';
-            ctx.fillText(truncateText(ctx, fullDT, textW), padX, line2Y);
-
-            /* ---- लाइन 3: Lat & Long (कम गैप) ---- */
-            var line3Y = line2Y + fsGPS + lineGap + 2;
-            ctx.font = 'bold ' + fsGPS + 'px Arial, sans-serif';
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'left';
-            if (gpsReady && currentLat !== null) {
-                var latStr = 'Lat: ' + currentLat.toFixed(6) + '\u00B0';
-                var longStr = 'Long: ' + currentLng.toFixed(6) + '\u00B0';
-                ctx.fillText(latStr, padX, line3Y);
-                var latW = ctx.measureText(latStr).width;
-                ctx.fillText(longStr, padX + latW + 12, line3Y);
-            } else {
-                ctx.fillText('GPS: N/A', padX, line3Y);
-            }
-
-            /* ---- लाइन 4: Acct ID ---- */
-            var acct = acctIn.value.trim();
-            if (acct) {
-                var line4Y = line3Y + fsAcct + lineGap + 2;
-                ctx.font = 'bold ' + fsAcct + 'px Arial, sans-serif';
-                ctx.fillStyle = '#ffffff';
-                ctx.textAlign = 'left';
-                ctx.fillText('Acct: ' + acct, padX, line4Y);
-            }
-
-            ctx.fillStyle = '#d4a017';
-            ctx.fillRect(0, barY + barH - 3, w, 3);
-        }
-
-        /* ========== फोटो कैप्चर ========== */
-        async function doCapture(sourceCanvas) {
-            /* अगर location fetch चल रहा है तो उसके पूरा होने तक रुको (max 3 सेकंड) */
-            if (locNamePromise && !locNameDone) {
-                await Promise.race([
-                    locNamePromise,
-                    new Promise(function (r) { setTimeout(r, 3000); })
-                ]);
-            }
-            var ctx = sourceCanvas.getContext('2d');
-            drawStamp(ctx, sourceCanvas.width, sourceCanvas.height);
+        /* ========== फोटो कैप्चर — बिना स्टैम्प, ओरिजिनल ========== */
+        function doCapture(sourceCanvas) {
             capturedData = sourceCanvas.toDataURL('image/jpeg', 0.92);
         }
 
         /* ========== कैमरा / गैलरी ========== */
-        $('camBtn').addEventListener('click', function () {
+        $('camBtn').addEventListener('click', function() {
             if (!isHTTPS) { showToast('HTTPS पर कैमरा नहीं चलेगी। गैलरी से फोटो चुनें।'); return; }
             openCam();
         });
-        $('galBtn').addEventListener('click', function () { fileInput.click(); });
+        $('galBtn').addEventListener('click', function() { fileInput.click(); });
 
-        fileInput.addEventListener('change', function () {
+        fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 var reader = new FileReader();
-                reader.onload = async function (e) {
+                reader.onload = function(e) {
                     var img = new Image();
-                    img.onload = async function () {
+                    img.onload = function() {
                         var c = document.createElement('canvas');
                         c.width = img.width; c.height = img.height;
                         var ctx = c.getContext('2d');
                         ctx.drawImage(img, 0, 0);
-                        await doCapture(c);
+                        doCapture(c);
                         showPreview();
                     };
                     img.src = e.target.result;
@@ -510,35 +394,39 @@
             $('errPhoto').classList.remove('show');
         }
 
-        async function openCam() {
-            try {
+        function openCam() {
+            navigator.mediaDevices.getUserMedia({
+                video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+            })
+            .then(function(stream) {
                 camModal.classList.add('active');
-                camStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
-                });
+                camStream = stream;
                 camVideo.srcObject = camStream;
-            } catch (e) { camModal.classList.remove('active'); showToast('कैमरा एक्सेस नहीं हो पा रहा। गैलरी से चुनें।'); }
+            })
+            .catch(function() { camModal.classList.remove('active'); showToast('कैमरा एक्सेस नहीं हो पा रहा। गैलरी से चुनें।'); });
         }
         function closeCam() {
-            if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
+            if (camStream) { camStream.getTracks().forEach(function(t) { t.stop(); }); camStream = null; }
             camVideo.srcObject = null; camModal.classList.remove('active');
         }
-        async function capturePhoto() {
+        function capturePhoto() {
             var v = camVideo, c = camCanvas;
             c.width = v.videoWidth; c.height = v.videoHeight;
             var ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0);
-            await doCapture(c);
+            doCapture(c);
             closeCam(); showPreview();
         }
-        async function flipCam() {
+        function flipCam() {
             facingMode = facingMode === 'environment' ? 'user' : 'environment';
-            if (camStream) camStream.getTracks().forEach(function (t) { t.stop(); });
-            try {
-                camStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
-                });
+            if (camStream) camStream.getTracks().forEach(function(t) { t.stop(); });
+            navigator.mediaDevices.getUserMedia({
+                video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+            })
+            .then(function(stream) {
+                camStream = stream;
                 camVideo.srcObject = camStream;
-            } catch (e) { }
+            })
+            .catch(function() {});
         }
         function retakePhoto() {
             capturedData = null; prevImg.src = '';
@@ -550,23 +438,23 @@
         var toastT = null;
         function showToast(m) {
             $('toastText').textContent = m; $('toastEl').classList.add('show');
-            clearTimeout(toastT); toastT = setTimeout(function () { $('toastEl').classList.remove('show'); }, 3000);
+            clearTimeout(toastT); toastT = setTimeout(function() { $('toastEl').classList.remove('show'); }, 3000);
         }
 
         function validate(inp, eid) {
             if (!inp.value.trim()) { inp.classList.add('err'); $(eid).classList.add('show'); return false; }
             inp.classList.remove('err'); $(eid).classList.remove('show'); return true;
         }
-        acctIn.addEventListener('input', function () { if (acctIn.value.trim()) { acctIn.classList.remove('err'); $('errAcct').classList.remove('show'); } });
-        remSel.addEventListener('change', function () { if (remSel.value) { remSel.classList.remove('err'); $('errRem').classList.remove('show'); } });
+        acctIn.addEventListener('input', function() { if (acctIn.value.trim()) { acctIn.classList.remove('err'); $('errAcct').classList.remove('show'); } });
+        remSel.addEventListener('change', function() { if (remSel.value) { remSel.classList.remove('err'); $('errRem').classList.remove('show'); } });
 
-        $('entryForm').addEventListener('submit', async function (e) {
+        $('entryForm').addEventListener('submit', function(e) {
             e.preventDefault();
             var ok = true;
             if (!validate(acctIn, 'errAcct')) ok = false;
             if (!validate(remSel, 'errRem')) ok = false;
             if (!capturedData) { $('errPhoto').classList.add('show'); ok = false; }
-            if (!ok) { showToast('कृपया सभी फील्ड भरें'); return; }
+            if (!ok) { showToast('कृपया सभी ज़रूरी फील्ड भरें'); return; }
 
             var btn = $('submitBtn');
             btn.disabled = true;
@@ -577,40 +465,62 @@
             var ts2 = now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
             var fullDT = ds2 + ' | ' + ts2;
             var acct = acctIn.value.trim();
+            var addRem = addRemIn.value.trim();
 
-            /* जो location दिख रहा है स्टैम्प में वही सेव होगा */
-            var stampLocText = '';
+            /* Location text जो Google Sheet में जाएगा */
+            var locationText = '';
             if (gpsReady && currentAccuracy <= ACCURACY_THRESHOLD && currentLocationName) {
-                stampLocText = currentLocationName;
+                locationText = currentLocationName;
             } else if (gpsReady && currentLat !== null) {
-                stampLocText = 'Lat: ' + currentLat.toFixed(6) + ', Long: ' + currentLng.toFixed(6) + ' (\u00B1' + Math.round(currentAccuracy) + 'm)';
+                locationText = 'Lat: ' + currentLat.toFixed(6) + ', Long: ' + currentLng.toFixed(6) + ' (\u00B1' + Math.round(currentAccuracy) + 'm)';
             } else {
-                stampLocText = 'N/A';
+                locationText = 'N/A';
             }
 
             var entry = {
-                acctId: acct, remarks: remSel.value,
-                latitude: currentLat, longitude: currentLng,
-                gpsAccuracy: Math.round(currentAccuracy),
-                locationName: stampLocText,
-                dateTime: fullDT, timestamp: now.getTime(), photo: capturedData
+                acctId: acct,
+                remarks: remSel.value,
+                additionalRemarks: addRem,
+                latitude: currentLat !== null ? currentLat.toFixed(6) : 'N/A',
+                longitude: currentLng !== null ? currentLng.toFixed(6) : 'N/A',
+                gpsAccuracy: gpsReady ? Math.round(currentAccuracy) + 'm' : 'N/A',
+                areaName: locationText,
+                dateTime: fullDT,
+                timestamp: now.getTime(),
+                photo: capturedData
             };
 
             var savedLocal = false, savedDrive = false, driveMsg = '';
 
-            try { var ents = JSON.parse(localStorage.getItem('dvvnl_entries') || '[]'); ents.push(entry); localStorage.setItem('dvvnl_entries', JSON.stringify(ents)); savedLocal = true; } catch (e) { }
+            try {
+                var ents = JSON.parse(localStorage.getItem('dvvnl_entries') || '[]');
+                ents.push(entry);
+                localStorage.setItem('dvvnl_entries', JSON.stringify(ents));
+                savedLocal = true;
+            } catch (ex) {}
 
             if (!SCRIPT_URL.includes('YOUR_URL')) {
-                try {
-                    var res = await fetch(SCRIPT_URL, {
-                        method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify(entry), redirect: 'follow'
-                    });
-                    var data = await res.json();
-                    if (data.drive) { savedDrive = true; } else { driveMsg = data.msg || 'Drive एरर'; }
-                } catch (e) { driveMsg = 'नेटवर्क एरर'; }
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(entry),
+                    redirect: 'follow'
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    if (data.drive) { savedDrive = true; }
+                    else { driveMsg = data.msg || 'Drive एरर'; }
+                })
+                .catch(function(ex) { driveMsg = 'नेटवर्क एरर'; })
+                .finally(function() {
+                    showSuccess(fullDT, savedLocal, savedDrive, driveMsg, btn);
+                });
+            } else {
+                showSuccess(fullDT, savedLocal, savedDrive, driveMsg, btn);
             }
+        });
 
+        function showSuccess(fullDT, savedLocal, savedDrive, driveMsg, btn) {
             $('sucDateTime').textContent = fullDT;
             var locHTML = '';
             if (savedLocal) locHTML += '<span class="loc-badge local"><i class="fas fa-mobile-screen"></i> Local</span> ';
@@ -622,21 +532,21 @@
             formBody.style.display = 'none'; formHdr.style.display = 'none';
             sucScreen.classList.add('active');
             btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Entry';
-        });
+        }
 
-        $('newEntryBtn').addEventListener('click', function () {
+        $('newEntryBtn').addEventListener('click', function() {
             $('entryForm').reset(); retakePhoto(); capturedData = null;
-            document.querySelectorAll('.err').forEach(function (el) { el.classList.remove('err'); });
-            document.querySelectorAll('.field-error').forEach(function (el) { el.classList.remove('show'); });
+            document.querySelectorAll('.err').forEach(function(el) { el.classList.remove('err'); });
+            document.querySelectorAll('.field-error').forEach(function(el) { el.classList.remove('show'); });
             sucScreen.classList.remove('active'); formHdr.style.display = 'flex'; formBody.style.display = 'block';
             formCard.style.animation = 'none'; formCard.offsetHeight; formCard.style.animation = 'slideU 0.4s ease-out';
         });
 
-        retakeBtn.addEventListener('click', function () { retakePhoto(); });
+        retakeBtn.addEventListener('click', function() { retakePhoto(); });
         $('shutterBtn').addEventListener('click', capturePhoto);
         $('camCloseBtn').addEventListener('click', closeCam);
         $('flipBtn').addEventListener('click', flipCam);
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && camModal.classList.contains('active')) closeCam(); });
+        document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && camModal.classList.contains('active')) closeCam(); });
     </script>
 </body>
 </html>
