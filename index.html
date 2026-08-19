@@ -382,6 +382,7 @@
                                 <option value="No Meter">No Meter</option>
                                 <option value="Reading Mismatch">Reading Mismatch</option>
                                 <option value="Meter Box Dirty">Meter Box Dirty</option>
+                                <option value="Probe Not Success">Probe Not Success</option>
                             </select>
                             <i class="fas fa-list-dropdown fi"></i>
                         </div>
@@ -513,14 +514,14 @@
         let capturedData = null, camStream = null, facingMode = 'environment';
         let currentLat = null, currentLng = null, gpsReady = false;
         let currentAccuracy = Infinity;
-        let currentLocationShort = null;   /* Bold heading e.g. "Jilupura, Uttar Pradesh, India" */
-        let currentLocationFull = null;    /* Full address line */
+        let currentLocationShort = null;
+        let currentLocationFull = null;
         let locNamePromise = null;
         let locNameDone = false;
         let lastFetchedLat = null, lastFetchedLng = null;
         let isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
         let loggedInMobile = null;
-        let screenshotData = null; /* Screenshot original data (no stamp, no compress) */
+        let screenshotData = null;
 
         var ACCURACY_THRESHOLD = 80;
         var CORRECT_PASSWORD = '12345';
@@ -811,7 +812,6 @@
             return t + '...';
         }
 
-        /* Word-wrap helper: wraps text into at most maxLines lines fitting maxWidth */
         function wrapText(ctx, text, maxWidth, maxLines) {
             if (!text) return [];
             var words = text.split(' ');
@@ -835,15 +835,6 @@
             return lines.slice(0, maxLines);
         }
 
-        function getGMTOffsetString() {
-            var offsetMin = -new Date().getTimezoneOffset();
-            var sign = offsetMin >= 0 ? '+' : '-';
-            var abs = Math.abs(offsetMin);
-            var hh = String(Math.floor(abs / 60)).padStart(2, '0');
-            var mm = String(abs % 60).padStart(2, '0');
-            return sign + hh + ':' + mm;
-        }
-
         function roundRectPath(ctx, x, y, w, h, r) {
             r = Math.min(r, w / 2, h / 2);
             ctx.beginPath();
@@ -855,9 +846,12 @@
             ctx.closePath();
         }
 
-        /* Draw a red map-pin marker */
+        /* Draw a red map-pin marker (Google Maps style) */
         function drawPin(ctx, cx, cy, r) {
             ctx.save();
+            ctx.shadowColor = 'rgba(0,0,0,0.35)';
+            ctx.shadowBlur = r * 0.3;
+            ctx.shadowOffsetY = r * 0.15;
             ctx.fillStyle = '#ea4335';
             ctx.beginPath();
             ctx.arc(cx, cy - r * 0.3, r, 0, Math.PI * 2);
@@ -866,6 +860,9 @@
             ctx.lineTo(cx + r * 0.85, cy - r * 0.05);
             ctx.closePath();
             ctx.fill();
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetY = 0;
             ctx.fillStyle = '#ffffff';
             ctx.beginPath();
             ctx.arc(cx, cy - r * 0.3, r * 0.42, 0, Math.PI * 2);
@@ -873,27 +870,55 @@
             ctx.restore();
         }
 
-        /* Fallback synthetic "map" look when real map tile can't be loaded (CORS/network) */
+        /* Google-Maps-style fallback map (used only when real tile can't load) */
         function drawFallbackMap(ctx, x, y, size) {
-            var grad = ctx.createLinearGradient(x, y, x + size, y + size);
-            grad.addColorStop(0, '#dfeadb');
-            grad.addColorStop(1, '#c7dcc3');
-            ctx.fillStyle = grad;
+            /* Base land color - Google Maps roadmap tan/cream */
+            ctx.fillStyle = '#eaf0e2';
             ctx.fillRect(x, y, size, size);
 
-            ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-            ctx.lineWidth = Math.max(2, size * 0.025);
-            ctx.beginPath();
-            ctx.moveTo(x, y + size * 0.35); ctx.lineTo(x + size, y + size * 0.45);
-            ctx.moveTo(x, y + size * 0.72); ctx.lineTo(x + size, y + size * 0.62);
-            ctx.moveTo(x + size * 0.28, y); ctx.lineTo(x + size * 0.42, y + size);
-            ctx.stroke();
+            /* subtle land texture blocks (building blocks feel) */
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillRect(x + size * 0.06, y + size * 0.08, size * 0.30, size * 0.22);
+            ctx.fillRect(x + size * 0.55, y + size * 0.60, size * 0.34, size * 0.26);
+            ctx.fillRect(x + size * 0.60, y + size * 0.10, size * 0.22, size * 0.18);
 
-            ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-            ctx.lineWidth = Math.max(1, size * 0.012);
+            /* park / green block */
+            ctx.fillStyle = '#c9e6ad';
+            ctx.fillRect(x + size * 0.08, y + size * 0.58, size * 0.28, size * 0.30);
+
+            /* water corner */
+            ctx.fillStyle = '#aee0f5';
             ctx.beginPath();
-            ctx.moveTo(x, y + size * 0.15); ctx.lineTo(x + size, y + size * 0.2);
-            ctx.stroke();
+            ctx.moveTo(x + size, y);
+            ctx.lineTo(x + size, y + size * 0.28);
+            ctx.quadraticCurveTo(x + size * 0.78, y + size * 0.18, x + size * 0.7, y);
+            ctx.closePath();
+            ctx.fill();
+
+            /* minor white roads with light gray border */
+            function road(x1, y1, x2, y2, width) {
+                ctx.strokeStyle = '#c9c9c9';
+                ctx.lineWidth = width + Math.max(1, size * 0.006);
+                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = width;
+                ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+            }
+
+            var w1 = Math.max(2, size * 0.022);
+            road(x, y + size * 0.34, x + size, y + size * 0.30, w1);
+            road(x, y + size * 0.70, x + size, y + size * 0.66, w1);
+            road(x + size * 0.30, y, x + size * 0.34, y + size, w1);
+            road(x + size * 0.66, y, x + size * 0.70, y + size, w1);
+
+            /* main highway - yellow, like Google Maps arterial roads */
+            var wMain = Math.max(3, size * 0.032);
+            ctx.strokeStyle = '#f2b632';
+            ctx.lineWidth = wMain + Math.max(1, size * 0.008);
+            ctx.beginPath(); ctx.moveTo(x, y + size * 0.5); ctx.lineTo(x + size, y + size * 0.44); ctx.stroke();
+            ctx.strokeStyle = '#fdd671';
+            ctx.lineWidth = wMain;
+            ctx.beginPath(); ctx.moveTo(x, y + size * 0.5); ctx.lineTo(x + size, y + size * 0.44); ctx.stroke();
         }
 
         /* Try loading a real static map tile (CORS-safe: only used if load succeeds cleanly) */
@@ -922,13 +947,13 @@
             });
         }
 
-        /* ========== NEW GPS STAMP (Check-In style, sizes as % of image width, clamped) ========== */
+        /* ========== GPS STAMP (Check-In style, no badge, no GMT) ========== */
         async function drawStamp(ctx, w, h) {
             var now = new Date();
             var dayName = now.toLocaleDateString('en-IN', { weekday: 'long' });
             var ds = now.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
             var ts = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }).toUpperCase();
-            var dateTimeText = dayName + ', ' + ds + ' ' + ts + ' GMT ' + getGMTOffsetString();
+            var dateTimeText = dayName + ', ' + ds + ' ' + ts;
 
             var hasGPS = gpsReady && currentLat !== null;
             var goodAccuracy = hasGPS && currentAccuracy <= ACCURACY_THRESHOLD;
@@ -937,7 +962,6 @@
             var addressText = (goodAccuracy && currentLocationFull) ? currentLocationFull : '';
             var latLongText = hasGPS ? ('Lat ' + currentLat.toFixed(6) + '\u00B0  Long ' + currentLng.toFixed(6) + '\u00B0') : 'GPS: N/A';
 
-            /* ---- FIXED: much larger % of width, with sane min/max clamps so text is always readable ---- */
             var pad        = clamp(Math.round(w * 0.028), 12, 34);
             var thumbSize  = clamp(Math.round(w * 0.17), 92, 260);
             var gap        = clamp(Math.round(w * 0.022), 10, 24);
@@ -946,20 +970,15 @@
             var fsAddress  = clamp(Math.round(w * 0.036), 18, 44);
             var fsLatLong  = clamp(Math.round(w * 0.036), 18, 44);
             var fsDate     = clamp(Math.round(w * 0.033), 17, 40);
-            var fsBadge    = clamp(Math.round(w * 0.030), 15, 34);
             var lineGap    = clamp(Math.round(w * 0.010), 6, 16);
 
             var textX = pad + thumbSize + gap;
             var textMaxWidth = Math.max(60, w - textX - pad);
 
-            /* wrap address into max 2 lines */
             ctx.font = '400 ' + fsAddress + 'px Arial, sans-serif';
             var addressLines = addressText ? wrapText(ctx, addressText, textMaxWidth, 2) : [];
 
-            var badgeH = Math.round(fsBadge * 1.85);
-
-            var textBlockH = badgeH + lineGap * 2
-                + fsHeading + lineGap
+            var textBlockH = fsHeading + lineGap
                 + (addressLines.length ? addressLines.length * (fsAddress + lineGap) : 0)
                 + fsLatLong + lineGap
                 + fsDate;
@@ -968,13 +987,13 @@
             var boxY = h - boxH;
             var boxW = w;
 
-            /* ---- background (only as tall as content needs) ---- */
+            /* background (only as tall as content needs) */
             ctx.fillStyle = 'rgba(15,15,20,0.62)';
             ctx.fillRect(0, boxY, boxW, boxH);
             ctx.fillStyle = '#d4a017';
             ctx.fillRect(0, boxY, boxW, Math.max(2, Math.round(w * 0.003)));
 
-            /* ---- map thumbnail ---- */
+            /* map thumbnail */
             var thumbX = pad;
             var thumbY = boxY + (boxH - thumbSize) / 2;
 
@@ -995,6 +1014,14 @@
             if (hasGPS) drawPin(ctx, thumbX + thumbSize / 2, thumbY + thumbSize / 2, thumbSize * 0.15);
             ctx.restore();
 
+            /* thin border around thumbnail for map-card feel */
+            ctx.save();
+            roundRectPath(ctx, thumbX, thumbY, thumbSize, thumbSize, Math.round(thumbSize * 0.07));
+            ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+            ctx.lineWidth = Math.max(1, thumbSize * 0.01);
+            ctx.stroke();
+            ctx.restore();
+
             /* Google wordmark on thumbnail */
             var fsGoogle = clamp(Math.round(thumbSize * 0.11), 9, 20);
             ctx.font = '700 ' + fsGoogle + 'px Arial, sans-serif';
@@ -1005,27 +1032,13 @@
             ctx.fillText('Google', thumbX + thumbSize * 0.06, thumbY + thumbSize - thumbSize * 0.06);
             ctx.shadowBlur = 0;
 
-            /* ---- text block (right side) ---- */
+            /* text block (right side) */
             var curY = boxY + pad;
-
-            /* Check In badge */
-            ctx.font = '700 ' + fsBadge + 'px Arial, sans-serif';
-            var badgeText = 'Check In';
-            var badgeTextW = ctx.measureText(badgeText).width;
-            var badgeW = badgeTextW + Math.round(fsBadge * 1.6);
-            roundRectPath(ctx, textX, curY, badgeW, badgeH, badgeH / 2);
-            ctx.fillStyle = '#34a853';
-            ctx.fill();
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(badgeText, textX + fsBadge * 0.8, curY + badgeH / 2 + 1);
-            ctx.textBaseline = 'alphabetic';
-            curY += badgeH + lineGap * 2;
 
             /* Heading (bold) with India flag emoji */
             ctx.font = '800 ' + fsHeading + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
+            ctx.textAlign = 'left';
             ctx.fillText(truncateText(ctx, headingText + ' \uD83C\uDDEE\uD83C\uDDF3', textMaxWidth), textX, curY + fsHeading * 0.78);
             curY += fsHeading + lineGap;
 
@@ -1045,7 +1058,7 @@
             ctx.fillText(latLongText, textX, curY + fsLatLong * 0.78);
             curY += fsLatLong + lineGap;
 
-            /* Date / Time line */
+            /* Date / Time line (no GMT) */
             ctx.font = '600 ' + fsDate + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
             ctx.fillText(dateTimeText, textX, curY + fsDate * 0.78);
