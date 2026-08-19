@@ -382,7 +382,6 @@
                                 <option value="No Meter">No Meter</option>
                                 <option value="Reading Mismatch">Reading Mismatch</option>
                                 <option value="Meter Box Dirty">Meter Box Dirty</option>
-                                <option value="Probe Not Success">Probe Not Success</option>
                             </select>
                             <i class="fas fa-list-dropdown fi"></i>
                         </div>
@@ -652,9 +651,8 @@
 
             var total = ents.length;
 
-            /* Today's count - auto fetch date */
             var now = new Date();
-            var todayStr = now.toLocaleDateString('en-CA'); /* YYYY-MM-DD local */
+            var todayStr = now.toLocaleDateString('en-CA');
             var todayCount = 0;
             ents.forEach(function (e) {
                 if (e.timestamp) {
@@ -662,11 +660,9 @@
                     var ds = d.toLocaleDateString('en-CA');
                     if (ds === todayStr) todayCount++;
                 } else if (e.dateTime) {
-                    /* fallback: match date string in dateTime field */
                     var parts = e.dateTime.split('|');
                     if (parts.length > 0) {
                         var datePart = parts[0].trim();
-                        /* compare using date object */
                         var dd = new Date(datePart);
                         if (!isNaN(dd.getTime()) && dd.toLocaleDateString('en-CA') === todayStr) todayCount++;
                     }
@@ -728,7 +724,6 @@
             var postcode = a.postcode || '';
             var road = a.road || '';
 
-            /* ---- Short heading (Bold line) ---- */
             var shortParts = [];
             var seen = {};
             [village, city, state, country].forEach(function (p) {
@@ -737,7 +732,6 @@
             var short = shortParts.length ? shortParts.join(', ') :
                 (data.display_name ? data.display_name.split(',').slice(0, 3).join(',').trim() : null);
 
-            /* ---- Full address line ---- */
             var fullParts = [];
             var seen2 = {};
             if (road && !seen2[road]) { fullParts.push(road); seen2[road] = true; }
@@ -807,6 +801,8 @@
             });
         }
         startGPS();
+
+        function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
 
         function truncateText(ctx, text, maxWidth) {
             if (ctx.measureText(text).width <= maxWidth) return text;
@@ -926,7 +922,7 @@
             });
         }
 
-        /* ========== NEW GPS STAMP (Check-In style with map thumbnail + full address) ========== */
+        /* ========== NEW GPS STAMP (Check-In style, sizes as % of image width, clamped) ========== */
         async function drawStamp(ctx, w, h) {
             var now = new Date();
             var dayName = now.toLocaleDateString('en-IN', { weekday: 'long' });
@@ -941,27 +937,26 @@
             var addressText = (goodAccuracy && currentLocationFull) ? currentLocationFull : '';
             var latLongText = hasGPS ? ('Lat ' + currentLat.toFixed(6) + '\u00B0  Long ' + currentLng.toFixed(6) + '\u00B0') : 'GPS: N/A';
 
-            /* ---- scale everything relative to image width ---- */
-            var scale = w / 1000;
-            var pad = Math.max(10, Math.round(14 * scale));
-            var thumbSize = Math.max(70, Math.round(105 * scale));
-            var gap = Math.max(8, Math.round(10 * scale));
+            /* ---- FIXED: much larger % of width, with sane min/max clamps so text is always readable ---- */
+            var pad        = clamp(Math.round(w * 0.028), 12, 34);
+            var thumbSize  = clamp(Math.round(w * 0.17), 92, 260);
+            var gap        = clamp(Math.round(w * 0.022), 10, 24);
 
-            var fsHeading = Math.max(15, Math.round(21 * scale));
-            var fsAddress = Math.max(12, Math.round(15 * scale));
-            var fsLatLong = Math.max(12, Math.round(15 * scale));
-            var fsDate = Math.max(12, Math.round(14 * scale));
-            var fsBadge = Math.max(10, Math.round(12 * scale));
-            var lineGap = Math.max(4, Math.round(5 * scale));
+            var fsHeading  = clamp(Math.round(w * 0.054), 24, 64);
+            var fsAddress  = clamp(Math.round(w * 0.036), 18, 44);
+            var fsLatLong  = clamp(Math.round(w * 0.036), 18, 44);
+            var fsDate     = clamp(Math.round(w * 0.033), 17, 40);
+            var fsBadge    = clamp(Math.round(w * 0.030), 15, 34);
+            var lineGap    = clamp(Math.round(w * 0.010), 6, 16);
 
             var textX = pad + thumbSize + gap;
-            var textMaxWidth = Math.max(50, w - textX - pad);
+            var textMaxWidth = Math.max(60, w - textX - pad);
 
             /* wrap address into max 2 lines */
             ctx.font = '400 ' + fsAddress + 'px Arial, sans-serif';
             var addressLines = addressText ? wrapText(ctx, addressText, textMaxWidth, 2) : [];
 
-            var badgeH = Math.max(20, Math.round(24 * scale));
+            var badgeH = Math.round(fsBadge * 1.85);
 
             var textBlockH = badgeH + lineGap * 2
                 + fsHeading + lineGap
@@ -974,10 +969,10 @@
             var boxW = w;
 
             /* ---- background (only as tall as content needs) ---- */
-            ctx.fillStyle = 'rgba(15,15,20,0.6)';
+            ctx.fillStyle = 'rgba(15,15,20,0.62)';
             ctx.fillRect(0, boxY, boxW, boxH);
             ctx.fillStyle = '#d4a017';
-            ctx.fillRect(0, boxY, boxW, Math.max(2, Math.round(3 * scale)));
+            ctx.fillRect(0, boxY, boxW, Math.max(2, Math.round(w * 0.003)));
 
             /* ---- map thumbnail ---- */
             var thumbX = pad;
@@ -990,7 +985,7 @@
             }
 
             ctx.save();
-            roundRectPath(ctx, thumbX, thumbY, thumbSize, thumbSize, Math.round(8 * scale));
+            roundRectPath(ctx, thumbX, thumbY, thumbSize, thumbSize, Math.round(thumbSize * 0.07));
             ctx.clip();
             if (mapImg) {
                 ctx.drawImage(mapImg, thumbX, thumbY, thumbSize, thumbSize);
@@ -1001,12 +996,13 @@
             ctx.restore();
 
             /* Google wordmark on thumbnail */
-            ctx.font = '700 ' + Math.max(9, Math.round(10 * scale)) + 'px Arial, sans-serif';
+            var fsGoogle = clamp(Math.round(thumbSize * 0.11), 9, 20);
+            ctx.font = '700 ' + fsGoogle + 'px Arial, sans-serif';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'left';
             ctx.shadowColor = 'rgba(0,0,0,0.7)';
             ctx.shadowBlur = 3;
-            ctx.fillText('Google', thumbX + 6 * scale, thumbY + thumbSize - 7 * scale);
+            ctx.fillText('Google', thumbX + thumbSize * 0.06, thumbY + thumbSize - thumbSize * 0.06);
             ctx.shadowBlur = 0;
 
             /* ---- text block (right side) ---- */
@@ -1016,14 +1012,14 @@
             ctx.font = '700 ' + fsBadge + 'px Arial, sans-serif';
             var badgeText = 'Check In';
             var badgeTextW = ctx.measureText(badgeText).width;
-            var badgeW = badgeTextW + Math.round(20 * scale);
+            var badgeW = badgeTextW + Math.round(fsBadge * 1.6);
             roundRectPath(ctx, textX, curY, badgeW, badgeH, badgeH / 2);
             ctx.fillStyle = '#34a853';
             ctx.fill();
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText(badgeText, textX + 10 * scale, curY + badgeH / 2 + 1);
+            ctx.fillText(badgeText, textX + fsBadge * 0.8, curY + badgeH / 2 + 1);
             ctx.textBaseline = 'alphabetic';
             curY += badgeH + lineGap * 2;
 
@@ -1163,7 +1159,6 @@
                 var file = this.files[0];
                 var reader = new FileReader();
                 reader.onload = function (e) {
-                    /* Original photo as-is — no canvas, no stamp, no compression */
                     screenshotData = e.target.result;
                     ssPrevImg.src = screenshotData;
                     ssPlaceholder.style.display = 'none';
@@ -1230,7 +1225,6 @@
             if (!validate(remSel, 'errRem')) ok = false;
             if (!capturedData) { $('errPhoto').classList.add('show'); ok = false; }
 
-            /* KWH, MD, Screenshot — NOT required, skip validation */
             if (!ok) { showToast('कृपया सभी ज़रूरी फील्ड सही भरें'); return; }
 
             var btn = $('submitBtn');
