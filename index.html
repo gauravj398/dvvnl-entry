@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cross Check Data Entry - DVVNL</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root {
+--primary: #0a2463;
+--primary-light: #1e3a7b;
+--accent: #d4a017;
+--accent-light: #f0c040;
+--bg: #eef1f5;
+--card: #ffffff;
+--text: #1a1a2e;
+--text-muted: #6b7280;
+--border: #dde2e8;
+--danger: #dc2626;
+--success: #16a34a;
+--warning: #f59e0b;
+--shadow: 0 2px 16px rgba(10,36,99,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;min-height:100dvh;overflow-x:hidden}
+
+.login-overlay{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:linear-gradient(160deg,#0a2463 0%,#0d1f4e 40%,#162456 100%);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.4s ease}
+.login-overlay.hidden{display:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.login-bg-pattern{position:absolute;top:0;left:0;right:0;bottom:0;opacity:0.04;background-image:repeating-linear-gradient(45deg,transparent,transparent 35px,rgba(255,255,255,0.5) 35px,rgba(255,255,255,0.5) 36px),repeating-linear-gradient(-45deg,transparent,transparent 35px,rgba(255,255,255,0.5) 35px,rgba(255,255,255,0.5) 36px);pointer-events:none}
+.login-glow{position:absolute;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(212,160,23,0.12),transparent 70%);top:10%;right:-60px;pointer-events:none;animation:glowP 4s ease-in-out infinite}
+.login-glow2{position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(30,58,123,0.3),transparent 70%);bottom:10%;left:-40px;pointer-events:none;animation:glowP 5s ease-in-out infinite reverse}
+@keyframes glowP{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.2);opacity:0.5}}
+.login-card{position:relative;width:100%;max-width:380px;background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:36px 28px 32px;animation:loginSlide 0.5s ease-out}
+@keyframes loginSlide{from{opacity:0;transform:translateY(30px) scale(0.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+.login-logo{width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid var(--accent);margin:0 auto 18px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(212,160,23,0.2)}
+.login-logo img{width:100%;height:100%;object-fit:contain;border-radius:50%}
+.login-card h2{color:#fff;text-align:center;font-size:20px;font-weight:800;margin-bottom:4px}
+.login-card .login-sub{text-align:center;color:rgba(255,255,255,0.5);font-size:9px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:28px}
+.login-field{margin-bottom:18px}
+.login-field label{display:block;color:rgba(255,255,255,0.7);font-size:11px;font-weight:600;margin-bottom:7px;letter-spacing:0.3px}
+.login-input-wrap{position:relative}
+.login-input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.35);font-size:15px;pointer-events:none;transition:color 0.3s}
+.login-input-wrap input{width:100%;padding:13px 14px 13px 42px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:500;color:#fff;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.12);border-radius:12px;outline:none;transition:all 0.25s}
+.login-input-wrap input::placeholder{color:rgba(255,255,255,0.3);font-weight:400}
+.login-input-wrap input:focus{border-color:var(--accent);background:rgba(255,255,255,0.1);box-shadow:0 0 0 3px rgba(212,160,23,0.1)}
+.login-input-wrap input:focus~i{color:var(--accent)}
+.login-input-wrap input.login-err{border-color:var(--danger);background:rgba(220,38,38,0.08)}
+.login-err-msg{font-size:10px;color:#ff6b6b;font-weight:500;margin-top:5px;display:none;align-items:center;gap:4px}
+.login-err-msg.show{display:flex}
+.login-btn{width:100%;padding:14px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--primary);background:linear-gradient(135deg,var(--accent),var(--accent-light));border:none;border-radius:12px;cursor:pointer;box-shadow:0 4px 16px rgba(212,160,23,0.3);transition:all 0.3s;margin-top:6px;position:relative;overflow:hidden}
+.login-btn:active{transform:scale(0.97)}
+.login-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.login-btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent);transition:left 0.5s}
+.login-btn:not(:disabled):hover::after{left:100%}
+.login-hint{text-align:center;margin-top:18px;color:rgba(255,255,255,0.35);font-size:10px;font-weight:400}
+
+header{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-light) 100%);position:sticky;top:0;z-index:100;box-shadow:0 3px 16px rgba(0,0,0,0.18)}
+.header-inner{display:flex;align-items:center;max-width:600px;margin:0 auto;padding:10px 14px;gap:10px;position:relative}
+.logo-wrap{width:44px;height:44px;flex-shrink:0;border-radius:50%;overflow:hidden;background:rgba(255,255,255,0.1);border:2px solid rgba(212,160,23,0.5);display:flex;align-items:center;justify-content:center}
+.logo-wrap img{width:100%;height:100%;object-fit:contain;border-radius:50%}
+.header-title{flex:1;text-align:center}
+.header-title h1{color:#fff;font-size:16px;font-weight:700;line-height:1.2}
+.header-title p{color:var(--accent-light);font-size:8px;font-weight:500;letter-spacing:0.8px;text-transform:uppercase}
+.header-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.header-icon-btn{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.85);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.25s}
+.header-icon-btn:active{transform:scale(0.92);background:rgba(255,255,255,0.16)}
+
+.menu-wrap{position:relative}
+.menu-dropdown{position:absolute;top:48px;right:0;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.18);min-width:220px;overflow:hidden;display:none;z-index:200;border:1px solid var(--border)}
+.menu-dropdown.show{display:block;animation:slideU 0.2s ease-out}
+.menu-item{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;font-weight:600;color:var(--text);cursor:pointer;border-bottom:1px solid var(--border);transition:background 0.2s}
+.menu-item:last-child{border-bottom:none}
+.menu-item:active{background:#f1f3f5}
+.menu-item i{color:var(--primary);font-size:14px;width:18px;text-align:center}
+
+.logout-btn{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.25s}
+.logout-btn:active{background:rgba(220,38,38,0.2);color:#ff6b6b;transform:scale(0.92)}
+
+.report-modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:5000;align-items:center;justify-content:center;padding:20px}
+.report-modal-bg.show{display:flex}
+.report-modal{background:#fff;border-radius:18px;padding:24px 20px 20px;max-width:340px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.2);animation:loginSlide 0.3s ease-out}
+.report-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.report-modal-head h3{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;color:var(--primary)}
+.report-modal-head h3 i{color:var(--accent)}
+.report-close{width:30px;height:30px;border-radius:50%;border:none;background:#f1f3f5;color:var(--text);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.report-stat{background:linear-gradient(135deg,rgba(10,36,99,0.05),rgba(10,36,99,0.02));border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.report-stat .stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0}
+.report-stat .stat-icon.total{background:linear-gradient(135deg,var(--primary),var(--primary-light))}
+.report-stat .stat-icon.today{background:linear-gradient(135deg,var(--accent),var(--accent-light))}
+.report-stat .stat-icon.month{background:linear-gradient(135deg,#7c3aed,#9333ea)}
+.report-stat .stat-info{flex:1}
+.report-stat .stat-label{font-size:11px;color:var(--text-muted);font-weight:500;margin-bottom:2px}
+.report-stat .stat-value{font-size:22px;font-weight:800;color:var(--text);line-height:1}
+.report-date{text-align:center;font-size:11px;color:var(--text-muted);margin-top:8px;font-weight:500}
+
+.https-warn{max-width:600px;margin:0 auto;padding:8px 14px;background:linear-gradient(90deg,rgba(245,158,11,0.12),rgba(220,38,38,0.08));border-bottom:1px solid rgba(245,158,11,0.2);display:none;align-items:center;gap:8px;font-size:10px;color:var(--danger);font-weight:500}
+.https-warn.show{display:flex}
+.https-warn i{font-size:13px;color:var(--warning);animation:warnP 1.5s ease-in-out infinite}
+@keyframes warnP{0%,100%{opacity:1}50%{opacity:0.4}}
+
+main{max-width:600px;margin:0 auto;padding:14px 12px 32px}
+.form-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden;animation:slideU 0.4s ease-out}
+@keyframes slideU{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.form-card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:rgba(10,36,99,0.02)}
+.form-card-header i{color:var(--primary);font-size:15px}
+.form-card-header span{font-size:13px;font-weight:600}
+.form-body{padding:18px 16px 22px}
+
+.field-group{margin-bottom:16px}
+.field-group label{display:block;font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px}
+.field-group label .hindi{display:block;font-size:10px;font-weight:400;color:var(--text-muted);margin-top:1px}
+.req{color:var(--danger)}
+.opt{color:var(--success);font-size:10px;font-weight:500;margin-left:4px}
+.input-wrap{position:relative}
+.input-wrap i.fi{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none;transition:color 0.3s}
+.input-wrap input,.input-wrap select,.input-wrap textarea{width:100%;padding:12px 12px 12px 38px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;color:var(--text);background:#f7f8fa;border:1.5px solid var(--border);border-radius:10px;outline:none;transition:all 0.25s;appearance:none;-webkit-appearance:none;resize:none}
+.input-wrap textarea{min-height:70px;line-height:1.5;padding-top:12px}
+.input-wrap input::placeholder,.input-wrap textarea::placeholder{color:#b0b7c0;font-weight:400}
+.input-wrap input:focus,.input-wrap select:focus,.input-wrap textarea:focus{border-color:var(--primary);background:#fff;box-shadow:0 0 0 3px rgba(10,36,99,0.06)}
+.input-wrap input:focus~i.fi,.input-wrap select:focus~i.fi,.input-wrap textarea:focus~i.fi{color:var(--primary)}
+.select-wrap{position:relative}
+.select-wrap::after{content:'\f107';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);pointer-events:none;font-size:12px}
+.select-wrap select{padding-right:36px;cursor:pointer}
+.field-error{font-size:10px;color:var(--danger);font-weight:500;margin-top:4px;display:none;align-items:center;gap:4px}
+.field-error.show{display:flex}
+.input-wrap input.err,.input-wrap select.err{border-color:var(--danger);background:#fef2f2}
+.digit-count{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:10px;font-weight:600;color:var(--text-muted);pointer-events:none;transition:color 0.3s}
+.digit-count.full{color:var(--success)}
+.digit-count.over{color:var(--danger)}
+
+.two-col-row{display:flex;gap:12px;margin-bottom:16px}
+.two-col-row .field-group{flex:1;margin-bottom:0}
+
+.photo-section{margin-bottom:18px}
+.photo-section>label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+.photo-btns{display:flex;gap:8px;margin-bottom:8px}
+.photo-btn{flex:1;padding:10px 8px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;background:#f7f8fa;color:var(--text);transition:all 0.25s}
+.photo-btn:active{transform:scale(0.97);border-color:var(--primary);color:var(--primary)}
+.photo-btn i{font-size:16px;color:var(--primary)}
+.photo-area{border:2px dashed var(--border);border-radius:14px;padding:18px;text-align:center;background:#f7f8fa;cursor:pointer;transition:all 0.3s;position:relative;display:none}
+.photo-area.show{display:block}
+.photo-area.captured{border-style:solid;border-color:var(--success);background:rgba(22,163,74,0.02);padding:6px}
+.ph-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0}
+.cam-circle{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(10,36,99,0.2)}
+.cam-circle i{color:#fff;font-size:20px}
+.ph-placeholder p{font-size:12px;color:var(--text-muted);font-weight:500}
+.ph-placeholder p b{color:var(--primary)}
+.captured-img{display:none;width:100%;border-radius:10px;overflow:hidden;position:relative}
+.captured-img img{width:100%;display:block;border-radius:10px}
+.retake-btn{display:none;margin-top:8px;padding:7px 18px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--primary);background:rgba(10,36,99,0.06);border:1.5px solid var(--primary);border-radius:8px;cursor:pointer;transition:all 0.25s}
+.retake-btn:active{background:var(--primary);color:#fff}
+.stamp-info{margin-top:6px;font-size:9px;color:var(--success);font-weight:600;display:none;align-items:center;justify-content:center;gap:4px}
+.stamp-info.show{display:flex}
+
+.ss-section{margin-bottom:18px}
+.ss-section>label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+.ss-area{border:2px dashed var(--border);border-radius:14px;padding:18px;text-align:center;background:#f7f8fa;cursor:pointer;transition:all 0.3s;position:relative;display:block}
+.ss-area.captured{border-style:solid;border-color:var(--success);background:rgba(22,163,74,0.02);padding:6px}
+.ss-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0}
+.ss-circle{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#6b21a8,#9333ea);display:flex;align-items:center;justify-content:center;box-shadow:0 3px 12px rgba(147,51,234,0.2)}
+.ss-circle i{color:#fff;font-size:20px}
+.ss-placeholder p{font-size:12px;color:var(--text-muted);font-weight:500}
+.ss-placeholder p b{color:#7c3aed}
+.ss-captured-img{display:none;width:100%;border-radius:10px;overflow:hidden;position:relative}
+.ss-captured-img img{width:100%;display:block;border-radius:10px}
+.ss-retake-btn{display:none;margin-top:8px;padding:7px 18px;font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:#7c3aed;background:rgba(124,58,237,0.06);border:1.5px solid #7c3aed;border-radius:8px;cursor:pointer;transition:all 0.25s}
+.ss-retake-btn:active{background:#7c3aed;color:#fff}
+
+.submit-btn{width:100%;padding:14px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:12px;cursor:pointer;box-shadow:0 3px 12px rgba(10,36,99,0.25);transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:8px;position:relative;overflow:hidden}
+.submit-btn:active{transform:scale(0.97)}
+.submit-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
+.submit-btn::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);transition:left 0.5s}
+.submit-btn:not(:disabled):hover::after{left:100%}
+
+.success-screen{display:none;text-align:center;padding:40px 20px 36px;animation:slideU 0.4s ease-out}
+.success-screen.active{display:block}
+.suc-icon-wrap{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(22,163,74,0.1),rgba(22,163,74,0.04));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;position:relative}
+.suc-icon-wrap::before{content:'';position:absolute;width:100px;height:100px;border-radius:50%;border:2px solid rgba(22,163,74,0.08);animation:sP 2s ease-in-out infinite}
+@keyframes sP{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.12);opacity:0.3}}
+.suc-icon-wrap i{font-size:38px;color:var(--success);animation:cPop 0.5s ease-out 0.15s both}
+@keyframes cPop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.success-screen h2{font-size:20px;font-weight:800;margin-bottom:6px}
+.success-screen .suc-sub{font-size:12px;color:var(--text-muted);margin-bottom:6px}
+.suc-datetime{display:inline-flex;align-items:center;gap:6px;background:rgba(10,36,99,0.05);padding:6px 14px;border-radius:16px;font-size:11px;font-weight:500;color:var(--primary);margin-bottom:6px}
+.suc-save-loc{font-size:10px;color:var(--text-muted);margin-bottom:26px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.loc-badge{padding:3px 10px;border-radius:10px;font-size:9px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.loc-badge.local{background:rgba(10,36,99,0.08);color:var(--primary)}
+.loc-badge.drive{background:rgba(22,163,74,0.1);color:var(--success)}
+.loc-badge.fail{background:rgba(220,38,38,0.1);color:var(--danger)}
+.loc-badge.syncing{background:rgba(245,158,11,0.12);color:var(--warning)}
+.loc-badge.syncing i.fa-spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.new-entry-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 32px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:12px;cursor:pointer;box-shadow:0 3px 12px rgba(10,36,99,0.25);transition:all 0.3s}
+.new-entry-btn:active{transform:scale(0.96)}
+
+.cam-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.94);z-index:1000;flex-direction:column;align-items:center;justify-content:center;padding:16px}
+.cam-modal.active{display:flex}
+.cam-modal-top{width:100%;max-width:480px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;color:#fff}
+.cam-modal-top h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.cam-close{width:36px;height:36px;border-radius:50%;border:none;background:rgba(255,255,255,0.12);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cam-video-box{width:100%;max-width:480px;border-radius:14px;overflow:hidden;position:relative;background:#000}
+.cam-video-box video{width:100%;display:block;border-radius:14px}
+.cam-video-box canvas{display:none}
+.cam-controls{margin-top:18px;display:flex;gap:18px;align-items:center}
+.shutter-btn{width:64px;height:64px;border-radius:50%;border:3px solid #fff;background:transparent;cursor:pointer;position:relative}
+.shutter-btn::after{content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;border-radius:50%;background:#fff;transition:all 0.15s}
+.shutter-btn:active::after{transform:translate(-50%,-50%) scale(0.85);background:var(--accent)}
+.flip-btn{width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,0.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+.toast-msg{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--danger);color:#fff;padding:10px 20px;border-radius:10px;font-size:12px;font-weight:600;font-family:'Poppins',sans-serif;box-shadow:0 6px 20px rgba(220,38,38,0.3);z-index:2000;transition:transform 0.35s ease;display:flex;align-items:center;gap:6px;white-space:nowrap;max-width:90vw}
+.toast-msg.show{transform:translateX(-50%) translateY(0)}
+.footer-note{text-align:center;padding:16px;font-size:10px;color:var(--text-muted);opacity:0.6}
+
+.logout-modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:5000;align-items:center;justify-content:center;padding:20px}
+.logout-modal-bg.show{display:flex}
+.logout-modal{background:#fff;border-radius:18px;padding:28px 24px 22px;max-width:320px;width:100%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.2);animation:loginSlide 0.3s ease-out}
+.logout-modal i.lm-icon{font-size:40px;color:var(--warning);margin-bottom:14px;display:block}
+.logout-modal h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.logout-modal p{font-size:12px;color:var(--text-muted);margin-bottom:22px}
+.logout-modal-btns{display:flex;gap:10px}
+.logout-modal-btns button{flex:1;padding:11px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;border-radius:10px;cursor:pointer;border:none;transition:all 0.25s}
+.lm-cancel{background:#f1f3f5;color:var(--text)}
+.lm-cancel:active{background:#e2e5e9}
+.lm-confirm{background:var(--danger);color:#fff;box-shadow:0 3px 10px rgba(220,38,38,0.25)}
+.lm-confirm:active{transform:scale(0.96)}
+
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;transition-duration:0.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="login-overlay" id="loginOverlay">
+<div class="login-bg-pattern"></div>
+<div class="login-glow"></div>
+<div class="login-glow2"></div>
+<div class="login-card">
+<div class="login-logo">
+<img src="logo.png" alt="DVVNL Logo">
+</div>
+<h2>Cross Check Data Entry</h2>
+<p class="login-sub">दक्षिणांचल विद्युत वितरण निगम लिमिटेड</p>
+<div class="login-field">
+<label>Mobile Number <span style="color:var(--danger)">*</span></label>
+<div class="login-input-wrap">
+<input type="tel" id="loginMobile" placeholder="10 अंकों का मोबाइल नंबर" maxlength="10" inputmode="numeric" autocomplete="off">
+<i class="fas fa-mobile-screen-button"></i>
+</div>
+<div class="login-err-msg" id="loginErrMob"><i class="fas fa-circle-exclamation"></i> कृपया 10 अंकों का मोबाइल नंबर दर्ज करें</div>
+</div>
+<div class="login-field">
+<label>Password <span style="color:var(--danger)">*</span></label>
+<div class="login-input-wrap">
+<input type="password" id="loginPass" placeholder="पासवर्ड दर्ज करें" autocomplete="off">
+<i class="fas fa-lock"></i>
+</div>
+<div class="login-err-msg" id="loginErrPass"><i class="fas fa-circle-exclamation"></i> पासवर्ड गलत है</div>
+</div>
+<button type="button" class="login-btn" id="loginBtn">
+<i class="fas fa-right-to-bracket"></i>&nbsp; Login
+</button>
+<p class="login-hint">DVVNL Cross Check Data Entry System © 2025</p>
+</div>
+</div>
+
+<div class="logout-modal-bg" id="logoutModalBg">
+<div class="logout-modal">
+<i class="fas fa-right-from-bracket lm-icon"></i>
+<h3>Logout करें?</h3>
+<p>क्या आप वाकई लॉगआउट करना चाहते हैं?</p>
+<div class="logout-modal-btns">
+<button class="lm-cancel" id="logoutCancel">नहीं</button>
+<button class="lm-confirm" id="logoutConfirm">हाँ, Logout</button>
+</div>
+</div>
+</div>
+
+<!-- Report Modal -->
+<div class="report-modal-bg" id="reportModalBg">
+<div class="report-modal">
+<div class="report-modal-head">
+<h3><i class="fas fa-chart-bar"></i> Report</h3>
+<button class="report-close" id="reportCloseBtn"><i class="fas fa-xmark"></i></button>
+</div>
+<div class="report-stat">
+<div class="stat-icon total"><i class="fas fa-database"></i></div>
+<div class="stat-info">
+<div class="stat-label">Total Data Count</div>
+<div class="stat-value" id="reportTotal">0</div>
+</div>
+</div>
+<div class="report-stat">
+<div class="stat-icon today"><i class="fas fa-calendar-day"></i></div>
+<div class="stat-info">
+<div class="stat-label">Today's Submitted Count</div>
+<div class="stat-value" id="reportToday">0</div>
+</div>
+</div>
+<div class="report-stat">
+<div class="stat-icon month"><i class="fas fa-calendar-alt"></i></div>
+<div class="stat-info">
+<div class="stat-label">This Month's Count</div>
+<div class="stat-value" id="reportMonth">0</div>
+</div>
+</div>
+<div class="report-date" id="reportDate"></div>
+</div>
+</div>
+
+<header>
+<div class="header-inner">
+<div class="logo-wrap">
+<img src="logo.png" alt="DVVNL Logo">
+</div>
+<div class="header-title">
+<h1>Cross Check Data Entry</h1>
+<p>दक्षिणांचल विद्युत वितरण निगम लिमिटेड</p>
+</div>
+<div class="header-actions">
+<div class="menu-wrap">
+<button class="header-icon-btn" id="menuBtn" title="Menu"><i class="fas fa-ellipsis-vertical"></i></button>
+<div class="menu-dropdown" id="menuDropdown">
+<div class="menu-item" id="reportMenuBtn">
+<i class="fas fa-chart-bar"></i> Report / रिपोर्ट
+</div>
+</div>
+</div>
+<button class="logout-btn" id="logoutBtn" title="Logout"><i class="fas fa-right-from-bracket"></i></button>
+</div>
+</div>
+</header>
+
+<div class="https-warn" id="httpsWarn">
+<i class="fas fa-triangle-exclamation"></i>
+<span>HTTPS पर नहीं है — GPS और Camera काम नहीं करेंगे। गैलरी से फोटो चुनें।</span>
+</div>
+
+<main>
+<div class="form-card" id="formCard">
+<div class="form-card-header" id="formHeader">
+<i class="fas fa-pen-to-square"></i>
+<span>Cross Check Details / क्रॉस चेक विवरण</span>
+</div>
+<div class="form-body" id="formBody">
+<form id="entryForm" novalidate>
+
+<div class="field-group">
+<label for="divisionName">Division Name <span class="req">*</span>
+<span class="hindi">डिवीजन का नाम चुनें</span>
+</label>
+<div class="input-wrap select-wrap">
+<select id="divisionName">
+<option value="" disabled selected>-- डिवीजन चुनें --</option>
+<option value="EDD FIROZABAD">EDD FIROZABAD</option>
+<option value="EDD JASRANA">EDD JASRANA</option>
+<option value="EDD SHIKOHABAD">EDD SHIKOHABAD</option>
+<option value="EDD SIRSAGANJ">EDD SIRSAGANJ</option>
+<option value="EDD TUNDLA">EDD TUNDLA</option>
+</select>
+<i class="fas fa-building fi"></i>
+</div>
+<div class="field-error" id="errDivision"><i class="fas fa-circle-exclamation"></i> कृपया डिवीजन का नाम चुनें</div>
+</div>
+
+<div class="field-group">
+<label for="acctId">Acct ID <span class="req">*</span>
+<span class="hindi">उपभोक्ता की खाता संख्या (ठीक 10 अंक)</span>
+</label>
+<div class="input-wrap">
+<input type="tel" id="acctId" placeholder="10 अंकों की खाता संख्या" maxlength="10" inputmode="numeric" autocomplete="off">
+<i class="fas fa-hashtag fi"></i>
+<span class="digit-count" id="digitCount">0/10</span>
+</div>
+<div class="field-error" id="errAcct"><i class="fas fa-circle-exclamation"></i> खाता संख्या ठीक से 10 अंक भरें</div>
+</div>
+
+<div class="field-group">
+<label for="remarks">Remarks <span class="req">*</span>
+<span class="hindi">टिप्पणी चुनें</span>
+</label>
+<div class="input-wrap select-wrap">
+<select id="remarks">
+<option value="" disabled selected>-- टिप्पणी चुनें --</option>
+<option value="Line Disconnect">Line Disconnect</option>
+<option value="Meter Defective">Meter Defective</option>
+<option value="House Lock">House Lock</option>
+<option value="No Meter">No Meter</option>
+<option value="Reading Mismatch">Reading Mismatch</option>
+<option value="Meter Box Dirty">Meter Box Dirty</option>
+<option value="Meter Box Improper">Meter Box Improper</option>
+<option value="Probe Not Success">Probe Not Success</option>
+</select>
+<i class="fas fa-list-dropdown fi"></i>
+</div>
+<div class="field-error" id="errRem"><i class="fas fa-circle-exclamation"></i> कृपया टिप्पणी चुनें</div>
+</div>
+
+<!-- KWH & MD Side-by-Side (Left-Right) -->
+<div class="two-col-row">
+<div class="field-group">
+<label for="kwhInput">KWH <span class="opt">(Optional)</span>
+<span class="hindi">KWH रीडिंग</span>
+</label>
+<div class="input-wrap">
+<input type="text" id="kwhInput" placeholder="जैसे: 01234" inputmode="decimal" autocomplete="off">
+<i class="fas fa-bolt fi"></i>
+</div>
+</div>
+<div class="field-group">
+<label for="mdInput">MD <span class="opt">(Optional)</span>
+<span class="hindi">MD रीडिंग</span>
+</label>
+<div class="input-wrap">
+<input type="text" id="mdInput" placeholder="जैसे: 5.6" inputmode="decimal" autocomplete="off">
+<i class="fas fa-tachograph-digital fi"></i>
+</div>
+</div>
+</div>
+
+<!-- Meter Number & Meter Make Side-by-Side (Left-Right) -->
+<div class="two-col-row">
+<div class="field-group">
+<label for="meterNoInput">Meter Number <span class="opt">(Optional)</span>
+<span class="hindi">मीटर नंबर दर्ज करें</span>
+</label>
+<div class="input-wrap">
+<input type="text" id="meterNoInput" placeholder="जैसे: M123456" autocomplete="off">
+<i class="fas fa-gauge fi"></i>
+</div>
+</div>
+<div class="field-group">
+<label for="meterMakeInput">Meter Make <span class="opt">(Optional)</span>
+<span class="hindi">मीटर मेक (कंपनी का नाम)</span>
+</label>
+<div class="input-wrap">
+<input type="text" id="meterMakeInput" placeholder="जैसे: L&amp;T, Secure, Genus" autocomplete="off">
+<i class="fas fa-industry fi"></i>
+</div>
+</div>
+</div>
+
+<div class="field-group">
+<label for="kwhRemarks">Other Remarks <span class="opt">(Optional)</span>
+<span class="hindi">KWH रीडिंग या अन्य टिप्पणी (खाली भी छोड़ सकते हैं)</span>
+</label>
+<div class="input-wrap">
+<textarea id="kwhRemarks" placeholder="जैसे: बिजली बंद है, तार टूटा हुआ है..." rows="3"></textarea>
+<i class="fas fa-pen fi" style="top:18px;transform:none"></i>
+</div>
+</div>
+
+<div class="photo-section">
+<label>Photo Capture <span class="req">*</span>
+<span class="hindi">फोटो खींचें या गैलरी से चुनें</span>
+</label>
+<div class="photo-btns">
+<button type="button" class="photo-btn" id="camBtn">
+<i class="fas fa-camera"></i> कैमरा
+</button>
+<button type="button" class="photo-btn" id="galBtn">
+<i class="fas fa-image"></i> गैलरी
+</button>
+</div>
+<input type="file" accept="image/*" id="fileInput" style="display:none">
+<div class="photo-area" id="photoArea">
+<div class="ph-placeholder" id="phPlaceholder">
+<div class="cam-circle"><i class="fas fa-camera"></i></div>
+<p><b>क्लिक करें</b> फोटो कैप्चर करने के लिए</p>
+</div>
+<div class="captured-img" id="capturedImg">
+<img id="prevImg" src="" alt="Photo">
+</div>
+<div class="stamp-info" id="stampInfo"><i class="fas fa-location-dot"></i> GPS Stamp लग गया</div>
+<button type="button" class="retake-btn" id="retakeBtn">
+<i class="fas fa-rotate-right"></i> फोटो बदलें
+</button>
+</div>
+<div class="field-error" id="errPhoto"><i class="fas fa-circle-exclamation"></i> फोटो चुनना अनिवार्य है</div>
+</div>
+
+<!-- Screenshot Upload Section -->
+<div class="ss-section">
+<label>Screenshot Upload <span class="opt">(Optional)</span>
+<span class="hindi">गैलरी से स्क्रीनशॉट अपलोड करें (Original)</span>
+</label>
+<input type="file" accept="image/*" id="ssFileInput" style="display:none">
+<div class="ss-area" id="ssArea">
+<div class="ss-placeholder" id="ssPlaceholder">
+<div class="ss-circle"><i class="fas fa-image"></i></div>
+<p><b>गैलरी से चुनें</b> — स्क्रीनशॉट अपलोड करने के लिए</p>
+</div>
+<div class="ss-captured-img" id="ssCapturedImg">
+<img id="ssPrevImg" src="" alt="Screenshot">
+</div>
+<button type="button" class="ss-retake-btn" id="ssRetakeBtn">
+<i class="fas fa-rotate-right"></i> स्क्रीनशॉट बदलें
+</button>
+</div>
+</div>
+
+<button type="submit" class="submit-btn" id="submitBtn">
+<i class="fas fa-paper-plane"></i> Submit Entry
+</button>
+</form>
+</div>
+
+<div class="success-screen" id="successScreen">
+<div class="suc-icon-wrap"><i class="fas fa-circle-check"></i></div>
+<h2>Your Record is Save</h2>
+<p class="suc-sub">आपकी एंट्री सफलतापूर्वक सेव हो गई है</p>
+<div class="suc-datetime"><i class="fas fa-clock"></i><span id="sucDateTime"></span></div>
+<div class="suc-save-loc" id="sucSaveLoc"></div>
+<br>
+<button type="button" class="new-entry-btn" id="newEntryBtn">
+<i class="fas fa-plus"></i> New Entry
+</button>
+</div>
+</div>
+<p class="footer-note">Cross Check Data Entry System - DVVNL © 2025</p>
+</main>
+
+<div class="cam-modal" id="camModal" role="dialog">
+<div class="cam-modal-top">
+<h3><i class="fas fa-camera"></i> फोटो कैप्चर करें</h3>
+<button class="cam-close" id="camCloseBtn"><i class="fas fa-xmark"></i></button>
+</div>
+<div class="cam-video-box">
+<video id="camVideo" autoplay playsinline></video>
+<canvas id="camCanvas"></canvas>
+</div>
+<div class="cam-controls">
+<button class="flip-btn" id="flipBtn"><i class="fas fa-camera-rotate"></i></button>
+<button class="shutter-btn" id="shutterBtn"></button>
+<div style="width:42px"></div>
+</div>
+</div>
+
+<div class="toast-msg" id="toastEl"><i class="fas fa-triangle-exclamation"></i><span id="toastText"></span></div>
+
+<script>
+/* GPS Map Camera style stamp */
+(function (global) {
+var ALPHABET = '23456789CFGHJMPQRVWX';
+function encodeOLC(lat, lng) {
+if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) return { full: '', short: '' };
+lat = Math.min(89.99999999, Math.max(-90, Number(lat)));
+lng = Number(lng);
+lng = ((lng + 180) % 360 + 360) % 360 - 180;
+var latVal = lat + 90, lngVal = lng + 180, code = '', latRes = 20, lngRes = 20;
+for (var i = 0; i < 5; i++) {
+var latDigit = Math.min(19, Math.floor(latVal / latRes));
+var lngDigit = Math.min(19, Math.floor(lngVal / lngRes));
+code += ALPHABET.charAt(latDigit) + ALPHABET.charAt(lngDigit);
+latVal -= latDigit * latRes; lngVal -= lngDigit * lngRes;
+if (i < 4) { latRes /= 20; lngRes /= 20; }
+}
+var row = Math.min(4, Math.floor(latVal / (latRes / 5)));
+var col = Math.min(3, Math.floor(lngVal / (lngRes / 4)));
+code += ALPHABET.charAt(row * 4 + col);
+return { full: code.substring(0, 8) + '+' + code.substring(8), short: (code.substring(4, 8) + '+' + code.substring(8)).toLowerCase() };
+}
+function stampDateTime(now) {
+now = now || new Date();
+var ist = new Date(now.getTime() + (5 * 60 + 30) * 60 * 1000);
+var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var dd = ('0' + ist.getUTCDate()).slice(-2);
+var mm = ('0' + (ist.getUTCMonth() + 1)).slice(-2);
+var yyyy = ist.getUTCFullYear();
+var h24 = ist.getUTCHours();
+var ampm = h24 >= 12 ? 'PM' : 'AM';
+var h = h24 % 12; if (h === 0) h = 12;
+return days[ist.getUTCDay()] + ', ' + dd + '/' + mm + '/' + yyyy + ' ' + ('0' + h).slice(-2) + ':' + ('0' + ist.getUTCMinutes()).slice(-2) + ' ' + ampm + ' GMT +05:30';
+}
+function uniqueJoin(parts) {
+var out = [], seen = {};
+parts.forEach(function (p) {
+if (!p) return; p = String(p).trim(); if (!p) return;
+var key = p.toLowerCase(); if (seen[key]) return; seen[key] = true; out.push(p);
+});
+return out.join(', ');
+}
+function buildStampLines(info) {
+info = info || {};
+var village = info.village || '', city = info.city || '', district = info.district || '', state = info.state || '', pin = info.postcode || '', country = info.country || 'India';
+var lat = info.lat, lng = info.lng, plus = info.plusCode || '';
+if (!plus && lat != null && lng != null) { var enc = encodeOLC(lat, lng); plus = enc ? enc.short : ''; }
+var title = uniqueJoin([village || city || district, state, country]) || 'Location: Not Available';
+var statePin = state ? (state + (pin ? ' ' + pin : '')) : (pin || '');
+var addrCore = uniqueJoin([city || village, district, statePin, country]);
+var address = plus ? (plus + (addrCore ? ', ' + addrCore : '')) : (addrCore || 'Address: Not Available');
+var latLong = (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) ? ('Lat ' + Number(lat).toFixed(7) + '\u00b0 Long ' + Number(lng).toFixed(6) + '\u00b0') : 'Lat/Long: Not Available';
+return { title: title, address: address, latLong: latLong, datetime: stampDateTime(info.now) };
+}
+function roundRect(ctx, x, y, w, h, r) {
+r = Math.min(r, w / 2, h / 2);
+ctx.beginPath(); ctx.moveTo(x + r, y);
+ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function drawIndianFlag(ctx, x, y, w) {
+var h = Math.max(12, Math.round(w * 0.67));
+ctx.save(); roundRect(ctx, x, y, w, h, Math.max(1, w * 0.08)); ctx.clip();
+ctx.fillStyle = '#FF9933'; ctx.fillRect(x, y, w, h / 3);
+ctx.fillStyle = '#FFFFFF'; ctx.fillRect(x, y + h / 3, w, h / 3);
+ctx.fillStyle = '#138808'; ctx.fillRect(x, y + 2 * h / 3, w, h / 3);
+var cx = x + w / 2, cy = y + h / 2, r = h * 0.14;
+ctx.strokeStyle = '#000080'; ctx.lineWidth = Math.max(0.8, w / 28);
+ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+ctx.lineWidth = Math.max(0.6, w / 40);
+for (var i = 0; i < 24; i++) { var a = (i / 24) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); ctx.stroke(); }
+ctx.restore(); return h;
+}
+function drawRedPin(ctx, x, y, size) {
+ctx.save(); ctx.translate(x, y);
+ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = size * 0.18; ctx.shadowOffsetY = size * 0.08;
+ctx.fillStyle = '#E53935'; ctx.beginPath();
+ctx.moveTo(0, size * 0.52);
+ctx.bezierCurveTo(-size * 0.55, size * 0.05, -size * 0.42, -size * 0.55, 0, -size * 0.55);
+ctx.bezierCurveTo(size * 0.42, -size * 0.55, size * 0.55, size * 0.05, 0, size * 0.52);
+ctx.closePath(); ctx.fill();
+ctx.shadowColor = 'transparent'; ctx.fillStyle = '#FFFFFF';
+ctx.beginPath(); ctx.arc(0, -size * 0.22, size * 0.16, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+function latLngToTile(lat, lng, zoom) {
+var n = Math.pow(2, zoom);
+var x = Math.floor((lng + 180) / 360 * n);
+var latRad = lat * Math.PI / 180;
+var y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+return { x: x, y: y, z: zoom };
+}
+var MAP_ZOOM = 18, mapTileCache = {}, mapTileLoading = {}, mapTileWaiters = {};
+function tileKey(lat, lng) { var t = latLngToTile(lat, lng, MAP_ZOOM); return t.z + '/' + t.y + '/' + t.x; }
+function copyTile(im) { var c = document.createElement('canvas'); c.width = im.width || 256; c.height = im.height || 256; c.getContext('2d').drawImage(im, 0, 0); return c; }
+function notifyWaiters(key, tile) { var list = mapTileWaiters[key] || []; mapTileWaiters[key] = []; list.forEach(function (fn) { try { fn(tile); } catch (e) {} }); }
+function preloadMapTile(lat, lng) {
+if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) return;
+var t = latLngToTile(lat, lng, MAP_ZOOM); var key = t.z + '/' + t.y + '/' + t.x;
+if (mapTileCache[key] || mapTileLoading[key]) return;
+mapTileLoading[key] = true;
+var urls = ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/' + t.z + '/' + t.y + '/' + t.x, 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/' + t.z + '/' + t.y + '/' + t.x];
+var idx = 0;
+function tryNext() {
+if (idx >= urls.length) { mapTileLoading[key] = false; notifyWaiters(key, null); return; }
+var im = new Image(); im.crossOrigin = 'anonymous';
+im.onload = function () { try { mapTileCache[key] = copyTile(im); } catch (e) {} mapTileLoading[key] = false; notifyWaiters(key, mapTileCache[key] || null); };
+im.onerror = function () { idx++; tryNext(); };
+im.src = urls[idx];
+}
+tryNext();
+}
+function getCachedMapTile(lat, lng) { if (lat == null || lng == null) return null; return mapTileCache[tileKey(lat, lng)] || null; }
+function waitForMapTile(lat, lng, ms, cb) {
+var cached = getCachedMapTile(lat, lng); if (cached) { cb(cached); return; }
+if (lat == null || lng == null) { cb(null); return; }
+var key = tileKey(lat, lng); preloadMapTile(lat, lng); var done = false;
+var timer = setTimeout(function () { if (done) return; done = true; cb(getCachedMapTile(lat, lng)); }, ms || 700);
+if (!mapTileWaiters[key]) mapTileWaiters[key] = [];
+mapTileWaiters[key].push(function (tile) { if (done) return; done = true; clearTimeout(timer); cb(tile || getCachedMapTile(lat, lng)); });
+}
+function wrapText(ctx, text, maxW) {
+var words = String(text).split(' '), lines = [], cur = '';
+for (var i = 0; i < words.length; i++) {
+var test = cur ? (cur + ' ' + words[i]) : words[i];
+if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = words[i]; } else cur = test;
+}
+if (cur) lines.push(cur); return lines.length ? lines : [''];
+}
+function drawGpsStamp(ctx, cw, ch, info, mapImg) {
+var lines = buildStampLines(info);
+var s = cw / 1080; if (s < 0.55) s = 0.55; if (s > 1.4) s = 1.4;
+var pad = Math.round(16 * s), mapSize = Math.round(186 * s), gap = Math.round(12 * s);
+var titleFs = Math.round(41 * s), bodyFs = Math.round(25 * s);
+var titleLh = Math.round(titleFs * 1.2), bodyLh = Math.round(bodyFs * 1.36);
+var boxPadX = Math.round(16 * s), boxPadY = Math.round(14 * s), flagW = Math.round(40 * s);
+ctx.font = '700 ' + titleFs + 'px Poppins, Roboto, Arial, sans-serif';
+var textMax = cw - pad * 2 - mapSize - gap - boxPadX * 2 - flagW - Math.round(10 * s);
+if (textMax < cw * 0.35) textMax = cw * 0.35;
+var titleLines = wrapText(ctx, lines.title, textMax);
+ctx.font = '500 ' + bodyFs + 'px Poppins, Roboto, Arial, sans-serif';
+var addrLines = wrapText(ctx, lines.address, textMax + flagW + Math.round(10 * s));
+var textH = titleLines.length * titleLh + addrLines.length * bodyLh + bodyLh * 2 + boxPadY * 2;
+var boxH = Math.max(mapSize, textH), overlayBottomPad = Math.round(16 * s);
+var boxY = ch - overlayBottomPad - boxH, mapX = pad, mapY = boxY + (boxH - mapSize);
+var textBoxX = mapX + mapSize + gap, textBoxW = cw - textBoxX - pad, textBoxY = boxY, textBoxH = boxH;
+ctx.save(); ctx.fillStyle = 'rgba(20, 22, 28, 0.72)'; roundRect(ctx, textBoxX, textBoxY, textBoxW, textBoxH, Math.round(18 * s)); ctx.fill(); ctx.restore();
+ctx.save(); roundRect(ctx, mapX, mapY, mapSize, mapSize, Math.round(16 * s)); ctx.clip();
+if (mapImg) { var iw = mapImg.width, ih = mapImg.height, sc = Math.max(mapSize / iw, mapSize / ih); ctx.drawImage(mapImg, mapX + (mapSize - iw * sc) / 2, mapY + (mapSize - ih * sc) / 2, iw * sc, ih * sc); }
+else { ctx.fillStyle = '#2b3a28'; ctx.fillRect(mapX, mapY, mapSize, mapSize); }
+ctx.restore();
+ctx.save(); roundRect(ctx, mapX, mapY, mapSize, mapSize, Math.round(16 * s)); ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = Math.max(2, 2 * s); ctx.stroke(); ctx.restore();
+drawRedPin(ctx, mapX + mapSize / 2, mapY + mapSize * 0.52, Math.round(mapSize * 0.28));
+var tx = textBoxX + boxPadX, ty = textBoxY + boxPadY + Math.round(2 * s);
+ctx.textBaseline = 'top'; ctx.fillStyle = '#FFFFFF'; ctx.font = '700 ' + titleFs + 'px Poppins, Roboto, Arial, sans-serif';
+titleLines.forEach(function (ln, i) { ctx.fillText(ln, tx, ty + i * titleLh); });
+var lastTitle = titleLines[titleLines.length - 1] || '';
+drawIndianFlag(ctx, tx + ctx.measureText(lastTitle).width + Math.round(8 * s), ty + (titleLines.length - 1) * titleLh + Math.round(titleFs * 0.12), flagW);
+var by = ty + titleLines.length * titleLh + Math.round(6 * s);
+ctx.font = '500 ' + bodyFs + 'px Poppins, Roboto, Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.92)';
+addrLines.forEach(function (ln, i) { ctx.fillText(ln, tx, by + i * bodyLh); });
+var ly = by + addrLines.length * bodyLh + Math.round(2 * s);
+ctx.fillText(lines.latLong, tx, ly); ctx.fillText(lines.datetime, tx, ly + bodyLh);
+var badgeFs = Math.round(13 * s); ctx.font = '600 ' + badgeFs + 'px Poppins, Roboto, Arial, sans-serif';
+var badgeLabel = 'GPS Map Camera', badgePadX = Math.round(11 * s), badgeH = Math.round(28 * s), iconW = Math.round(15 * s);
+var badgeW = ctx.measureText(badgeLabel).width + badgePadX * 2 + iconW + Math.round(6 * s);
+var badgeX = cw - pad - badgeW, badgeY = textBoxY - badgeH - Math.round(8 * s); if (badgeY < 8) badgeY = 8;
+ctx.save(); ctx.fillStyle = 'rgba(28, 32, 38, 0.78)'; roundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2); ctx.fill();
+ctx.fillStyle = '#FFFFFF'; var bcx = badgeX + badgePadX + iconW / 2, bcy = badgeY + badgeH / 2;
+ctx.beginPath(); ctx.arc(bcx, bcy, iconW * 0.38, 0, Math.PI * 2); ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(1.2, s); ctx.stroke();
+ctx.beginPath(); ctx.arc(bcx, bcy, iconW * 0.16, 0, Math.PI * 2); ctx.fill();
+ctx.fillRect(bcx + iconW * 0.18, bcy - iconW * 0.32, iconW * 0.16, iconW * 0.14);
+ctx.fillText(badgeLabel, badgeX + badgePadX + iconW + Math.round(4 * s), badgeY + (badgeH - badgeFs) / 2 - 1); ctx.restore();
+}
+function applyGpsStamp(dataUrl, info, quality, cb) {
+var img = new Image();
+img.onload = function () {
+var maxW = info && info.maxWidth ? info.maxWidth : 1024;
+var scale = Math.min(1, maxW / img.width);
+var cw = Math.max(1, Math.round(img.width * scale)), ch = Math.max(1, Math.round(img.height * scale));
+var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, cw, ch);
+function finish(mapImg) { try { drawGpsStamp(ctx, cw, ch, info || {}, mapImg); cb(c.toDataURL('image/jpeg', quality == null ? 0.72 : quality)); } catch (e) { cb(dataUrl); } }
+var lat = info && info.lat, lng = info && info.lng, cached = getCachedMapTile(lat, lng);
+if (cached) { finish(cached); return; }
+waitForMapTile(lat, lng, 700, finish);
+};
+img.onerror = function () { cb(dataUrl); }; img.src = dataUrl;
+}
+global.GpsStamp = {
+encodeOLC: encodeOLC, stampDateTime: stampDateTime, buildStampLines: buildStampLines,
+applyGpsStamp: applyGpsStamp, preloadMapTile: preloadMapTile,
+parseGeoAddress: function (data) {
+var a = (data && data.address) || {}, type = (data && (data.addresstype || data.type || data.category)) || '', named = (data && data.name) || '';
+var village = a.village || a.hamlet || a.isolated_dwelling || a.farm || a.croft || '';
+if (!village && /^(village|hamlet|isolated_dwelling|farm)$/i.test(type) && named) village = named;
+if (!village) village = a.suburb || a.neighbourhood || a.quarter || a.residential || a.locality || '';
+var city = a.city || a.town || a.municipality || '';
+if (!city && /^(city|town|municipality)$/i.test(type) && named) city = named;
+var district = a.state_district || a.district || '';
+if (district) district = String(district).replace(/\s+district$/i, '').trim();
+if (!district && a.county && a.county !== city && !/tehsil|tahsil|block/i.test(a.county)) district = String(a.county).replace(/\s+district$/i, '').trim();
+if (village && city && village.toLowerCase() === city.toLowerCase()) village = '';
+if (village && district && village.toLowerCase() === district.toLowerCase()) village = '';
+return { village: village || '', city: city || '', district: district || '', state: a.state || '', postcode: a.postcode || '', country: a.country || 'India', road: a.road || '', displayName: data && data.display_name ? data.display_name : '' };
+}
+};
+})(typeof window !== 'undefined' ? window : this);
+
+function updatePlusCode() {
+    if (currentLat == null || currentLng == null) return;
+    var enc = GpsStamp.encodeOLC(currentLat, currentLng);
+    currentPlusCode = enc && enc.short ? enc.short : '';
+}
+
+function sameName(a, b) {
+    if (!a || !b) return false;
+    return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+}
+
+function cleanAdminName(name) {
+    if (!name) return '';
+    return String(name).replace(/\s+(district|tehsil|tahsil|block)$/i, '').trim();
+}
+
+function fetchJsonTimeout(url, opts, ms) {
+    return new Promise(function (resolve) {
+        var done = false, timer = setTimeout(function () { if (done) return; done = true; resolve(null); }, ms || 7000);
+        fetch(url, opts || {}).then(function (r) { return r.json(); }).then(function (j) {
+            if (done) return; done = true; clearTimeout(timer); resolve(j);
+        }).catch(function () { if (done) return; done = true; clearTimeout(timer); resolve(null); });
+    });
+}
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+    var R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+function applyResolvedAddress() {
+    var shortParts = [], seen = {};
+    [currentVillage, currentCity, currentState, currentCountry].forEach(function (p) {
+        if (p && !seen[p]) { shortParts.push(p); seen[p] = true; }
+    });
+    currentLocationShort = shortParts.length ? shortParts.join(', ') : null;
+    var fullParts = [], seen2 = {};
+    [currentVillage, currentCity, currentDistrict, currentState + (currentPin ? (' ' + currentPin) : ''), currentCountry].forEach(function (p) {
+        if (!p) return;
+        p = String(p).trim();
+        if (!p || seen2[p.toLowerCase()]) return;
+        seen2[p.toLowerCase()] = true;
+        fullParts.push(p);
+    });
+    currentLocationFull = fullParts.length ? fullParts.join(', ') : null;
+    currentStampAddress = currentLocationFull;
+    locNameDone = true;
+}
+
+function pickNearbyVillage(elements, lat, lng, city, district) {
+    if (!elements || !elements.length) return '';
+    var best = '', bestD = 1e9;
+    elements.forEach(function (e) {
+        var tags = e.tags || {}, name = tags.name || tags['name:en'] || '';
+        if (!name || sameName(name, city) || sameName(name, district)) return;
+        var elat = e.lat != null ? e.lat : (e.center && e.center.lat);
+        var elng = e.lon != null ? e.lon : (e.center && e.center.lon);
+        if (elat == null || elng == null) return;
+        var d = haversineKm(lat, lng, elat, elng);
+        if (d < bestD) { bestD = d; best = name; }
+    });
+    return best;
+}
+
+function fetchNearbyVillage(lat, lng, city, district) {
+    var q = '[out:json][timeout:12];(node["place"~"^(village|hamlet|isolated_dwelling|suburb|neighbourhood|locality)$"](around:4000,' + lat + ',' + lng + ');way["place"~"^(village|hamlet|isolated_dwelling|suburb|neighbourhood|locality)$"](around:4000,' + lat + ',' + lng + '););out tags center 30;';
+    return fetchJsonTimeout('https://overpass-api.de/api/interpreter', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: q }, 12000).then(function (data) {
+        return pickNearbyVillage(data && data.elements, lat, lng, city, district);
+    });
+}
+
+function mergeBigData(bd, city, district, state, pin, country) {
+    if (!bd) return { city: city, district: district, state: state, pin: pin, country: country, village: '' };
+    var out = {
+        city: city || bd.city || bd.locality || '',
+        district: district || '',
+        state: state || bd.principalSubdivision || '',
+        pin: pin || bd.postcode || '',
+        country: country || bd.countryName || 'India',
+        village: ''
+    };
+    var adm = (bd.localityInfo && bd.localityInfo.administrative) || [];
+    adm.forEach(function (item) {
+        var desc = ((item && item.description) || '').toLowerCase(), name = cleanAdminName(item && item.name);
+        if (!name) return;
+        if (!out.district && /district/.test(desc)) out.district = name;
+        if (!out.city && /\bcity\b|town|municipality/.test(desc)) out.city = name;
+    });
+    var loc = bd.locality || '';
+    if (loc && !sameName(loc, out.city) && !sameName(loc, out.district) && !sameName(loc, out.state)) out.village = loc;
+    return out;
+}
+
+function fetchLocationName(lat, lng) {
+    if (lastFetchedLat === lat && lastFetchedLng === lng && locNamePromise) return locNamePromise;
+    lastFetchedLat = lat;
+    lastFetchedLng = lng;
+    locNameDone = false;
+    locNamePromise = Promise.all([
+        fetchJsonTimeout('https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&extratags=1&namedetails=1&zoom=18&accept-language=en&lat=' + lat + '&lon=' + lng, { headers: { 'Accept': 'application/json' } }, 7000),
+        fetchJsonTimeout('https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + lat + '&longitude=' + lng + '&localityLanguage=en', {}, 6000)
+    ]).then(function (results) {
+        var nom = GpsStamp.parseGeoAddress(results[0] || {});
+        var merged = mergeBigData(results[1], nom.city, nom.district, nom.state, nom.postcode, nom.country);
+        currentCity = merged.city || '';
+        currentDistrict = merged.district || '';
+        currentState = merged.state || '';
+        currentPin = merged.pin || '';
+        currentCountry = merged.country || 'India';
+        currentVillage = nom.village || merged.village || '';
+        if (currentVillage && (sameName(currentVillage, currentCity) || sameName(currentVillage, currentDistrict))) currentVillage = '';
+        applyResolvedAddress();
+        if (currentVillage) return { village: currentVillage };
+        return fetchNearbyVillage(lat, lng, currentCity, currentDistrict).then(function (near) {
+            if (near && !sameName(near, currentCity) && !sameName(near, currentDistrict)) currentVillage = near;
+            applyResolvedAddress();
+            return { village: currentVillage, city: currentCity, district: currentDistrict };
+        });
+    }).catch(function () {
+        applyResolvedAddress();
+        return null;
+    });
+    return locNamePromise;
+}
+
+function currentStampInfo(maxWidth) {
+    updatePlusCode();
+    var village = currentVillage || '';
+    if (village && (sameName(village, currentCity) || sameName(village, currentDistrict))) village = currentVillage || '';
+    return {
+        village: village,
+        city: currentCity,
+        district: currentDistrict,
+        state: currentState,
+        postcode: currentPin,
+        country: currentCountry || 'India',
+        lat: currentLat,
+        lng: currentLng,
+        plusCode: currentPlusCode,
+        maxWidth: maxWidth || COMPRESS_MAX_WIDTH
+    };
+}
+
+function stampThenSet(raw, maxWidth, quality) {
+    function go() {
+        GpsStamp.applyGpsStamp(raw, currentStampInfo(maxWidth), quality, function (stamped) {
+            capturedData = stamped;
+            prevImg.src = capturedData;
+            phHolder.style.display = 'none';
+            captImg.style.display = 'block';
+            retakeBtn.style.display = 'inline-block';
+            photoArea.classList.add('show', 'captured');
+            $('errPhoto').classList.remove('show');
+            stampInfo.classList.add('show');
+        });
+    }
+    var hasAddr = !!(currentVillage || currentCity || currentState);
+    if (currentLat != null && hasAddr) { go(); return; }
+    showToast('GPS Stamp लग रहा है... 📍');
+    if (currentLat != null && locNamePromise) locNamePromise.then(go).catch(go);
+    else if (currentLat != null) fetchLocationName(currentLat, currentLng).then(go).catch(go);
+    else go();
+}
+
+function waitGpsThenStamp(raw, maxWidth, quality) {
+    if (currentLat != null) { stampThenSet(raw, maxWidth, quality); return; }
+    showToast('GPS Stamp लग रहा है... 📍');
+    var tries = 0;
+    var t = setInterval(function () {
+        tries++;
+        if (currentLat != null || tries > 10) {
+            clearInterval(t);
+            stampThenSet(raw, maxWidth, quality);
+        }
+    }, 300);
+}
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRUXVbmnJwS5K1Wi0jr4CjhvtcOAww-UIGe2bFxWJodw9nCmGKNMl564gFHl7-37IIeg/exec';
+
+let capturedData = null, camStream = null, facingMode = 'environment';
+let currentLat = null, currentLng = null, gpsReady = false;
+let currentAccuracy = Infinity;
+let currentLocationShort = null;
+let currentLocationFull = null;
+let currentStampAddress = null;
+let currentVillage = '', currentCity = '', currentDistrict = '', currentState = '', currentPin = '', currentCountry = 'India', currentPlusCode = '';
+let locNamePromise = null;
+let locNameDone = false;
+let lastFetchedLat = null, lastFetchedLng = null;
+let isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
+let loggedInMobile = null;
+let screenshotData = null;
+
+var ACCURACY_THRESHOLD = 80;
+var CORRECT_PASSWORD = '12345';
+
+var COMPRESS_MAX_WIDTH = 1024;
+var COMPRESS_QUALITY = 0.65;
+var GALLERY_MAX_WIDTH = 1600;
+var GALLERY_QUALITY = 0.8;
+
+const $ = id => document.getElementById(id);
+const divSel = $('divisionName'), acctIn = $('acctId'), remSel = $('remarks');
+const kwhInput = $('kwhInput'), mdInput = $('mdInput'), kwhArea = $('kwhRemarks');
+const meterNoInput = $('meterNoInput'), meterMakeInput = $('meterMakeInput');
+const photoArea = $('photoArea'), phHolder = $('phPlaceholder');
+const captImg = $('capturedImg'), prevImg = $('prevImg'), retakeBtn = $('retakeBtn');
+const stampInfo = $('stampInfo');
+const camModal = $('camModal'), camVideo = $('camVideo'), camCanvas = $('camCanvas');
+const formBody = $('formBody'), sucScreen = $('successScreen');
+const formHdr = $('formHeader'), formCard = $('formCard');
+const fileInput = $('fileInput');
+const ssFileInput = $('ssFileInput'), ssArea = $('ssArea'), ssPlaceholder = $('ssPlaceholder');
+const ssCapturedImg = $('ssCapturedImg'), ssPrevImg = $('ssPrevImg'), ssRetakeBtn = $('ssRetakeBtn');
+const loginOverlay = $('loginOverlay');
+const loginMobile = $('loginMobile');
+const loginPass = $('loginPass');
+const digitCount = $('digitCount');
+
+if (!isHTTPS) $('httpsWarn').classList.add('show');
+
+function onlyNumbers(input) {
+    input.addEventListener('input', function () {
+        this.value = this.value.replace(/[^0-9]/g, '');
+    });
+}
+onlyNumbers(loginMobile);
+onlyNumbers(acctIn);
+
+acctIn.addEventListener('input', function () {
+    var len = this.value.length;
+    digitCount.textContent = len + '/10';
+    digitCount.className = 'digit-count';
+    if (len === 10) digitCount.classList.add('full');
+    else if (len > 10) digitCount.classList.add('over');
+    if (this.value.trim()) {
+        this.classList.remove('err');
+        $('errAcct').classList.remove('show');
+    }
+});
+
+loginMobile.addEventListener('input', function () {
+    this.classList.remove('login-err');
+    $('loginErrMob').classList.remove('show');
+});
+loginPass.addEventListener('input', function () {
+    this.classList.remove('login-err');
+    $('loginErrPass').classList.remove('show');
+});
+
+function checkSavedLogin() {
+    try {
+        var saved = localStorage.getItem('dvvnl_login');
+        if (saved) {
+            var data = JSON.parse(saved);
+            if (data.mobile && data.mobile.length === 10 && data.password === CORRECT_PASSWORD) {
+                loggedInMobile = data.mobile;
+                loginOverlay.classList.add('hidden');
+                return true;
+            }
+        }
+    } catch (e) {}
+    return false;
+}
+
+$('loginBtn').addEventListener('click', function () {
+    var mob = loginMobile.value.trim();
+    var pass = loginPass.value.trim();
+    var valid = true;
+    if (!/^[0-9]{10}$/.test(mob)) {
+        loginMobile.classList.add('login-err');
+        $('loginErrMob').classList.add('show');
+        valid = false;
+    }
+    if (pass !== CORRECT_PASSWORD) {
+        loginPass.classList.add('login-err');
+        $('loginErrPass').classList.add('show');
+        valid = false;
+    }
+    if (!valid) return;
+    loggedInMobile = mob;
+    try {
+        localStorage.setItem('dvvnl_login', JSON.stringify({ mobile: mob, password: pass }));
+    } catch (e) {}
+    loginOverlay.classList.add('hidden');
+});
+
+loginPass.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') $('loginBtn').click();
+});
+loginMobile.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') loginPass.focus();
+});
+
+/* ========== 3-DOT MENU ========== */
+$('menuBtn').addEventListener('click', function (e) {
+    e.stopPropagation();
+    $('menuDropdown').classList.toggle('show');
+});
+document.addEventListener('click', function (e) {
+    if (!$('menuDropdown').contains(e.target) && e.target !== $('menuBtn') && !$('menuBtn').contains(e.target)) {
+        $('menuDropdown').classList.remove('show');
+    }
+});
+
+/* ========== REPORT MODAL (INSTANT & ACCURATE) ========== */
+var cachedReport = null;
+
+$('reportMenuBtn').addEventListener('click', function () {
+    $('menuDropdown').classList.remove('show');
+    showReport();
+    $('reportModalBg').classList.add('show');
+});
+$('reportCloseBtn').addEventListener('click', function () {
+    $('reportModalBg').classList.remove('show');
+});
+$('reportModalBg').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.remove('show');
+});
+
+function showReport() {
+    var now = new Date();
+    var dispDate = now.toLocaleDateString('hi-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    $('reportDate').innerHTML = '<i class="fas fa-calendar"></i> आज की तिथि: ' + dispDate;
+
+    if (cachedReport) {
+        $('reportTotal').textContent = cachedReport.total;
+        $('reportToday').textContent = cachedReport.today;
+        $('reportMonth').textContent = cachedReport.month;
+    } else {
+        $('reportTotal').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:16px;"></i>';
+        $('reportToday').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:16px;"></i>';
+        $('reportMonth').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:16px;"></i>';
+    }
+
+    if (!SCRIPT_URL.includes('YOUR_URL')) {
+        var mobParam = loggedInMobile ? '&mobile=' + encodeURIComponent(loggedInMobile) : '';
+        fetch(SCRIPT_URL + '?action=getReport' + mobParam)
+            .then(function (res) { return res.json(); })
+            .then(function (res) {
+                if (res && res.success) {
+                    cachedReport = {
+                        total: res.total,
+                        today: res.today,
+                        month: res.month
+                    };
+                    $('reportTotal').textContent = res.total;
+                    $('reportToday').textContent = res.today;
+                    $('reportMonth').textContent = res.month;
+                }
+            })
+            .catch(function () {
+                if (!cachedReport) {
+                    fallbackLocalReport();
+                }
+            });
+    } else {
+        fallbackLocalReport();
+    }
+}
+
+function fallbackLocalReport() {
+    var ents = [];
+    try {
+        ents = JSON.parse(localStorage.getItem('dvvnl_entries') || '[]');
+    } catch (e) { ents = []; }
+
+    var now = new Date();
+    var year = now.getFullYear();
+    var month = ('0' + (now.getMonth() + 1)).slice(-2);
+    var day = ('0' + now.getDate()).slice(-2);
+    var todayStr = year + '-' + month + '-' + day;
+    var currentMonthPrefix = year + '-' + month;
+
+    var total = ents.length;
+    var todayCount = 0;
+    var monthCount = 0;
+
+    ents.forEach(function (e) {
+        var dStr = e.dateOnly || '';
+        if (dStr === todayStr) todayCount++;
+        if (dStr && dStr.startsWith(currentMonthPrefix)) monthCount++;
+    });
+
+    $('reportTotal').textContent = total;
+    $('reportToday').textContent = todayCount;
+    $('reportMonth').textContent = monthCount;
+}
+
+/* ========== LOGOUT ========== */
+$('logoutBtn').addEventListener('click', function () {
+    $('logoutModalBg').classList.add('show');
+});
+$('logoutCancel').addEventListener('click', function () {
+    $('logoutModalBg').classList.remove('show');
+});
+$('logoutModalBg').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.remove('show');
+});
+$('logoutConfirm').addEventListener('click', function () {
+    try { localStorage.removeItem('dvvnl_login'); } catch (e) {}
+    loggedInMobile = null;
+    cachedReport = null;
+    $('entryForm').reset();
+    retakePhoto();
+    retakeScreenshot();
+    capturedData = null;
+    screenshotData = null;
+    document.querySelectorAll('.err').forEach(function (el) { el.classList.remove('err'); });
+    document.querySelectorAll('.field-error').forEach(function (el) { el.classList.remove('show'); });
+    sucScreen.classList.remove('active');
+    formHdr.style.display = 'flex';
+    formBody.style.display = 'block';
+    digitCount.textContent = '0/10';
+    digitCount.className = 'digit-count';
+    loginMobile.value = '';
+    loginPass.value = '';
+    loginMobile.classList.remove('login-err');
+    loginPass.classList.remove('login-err');
+    $('loginErrMob').classList.remove('show');
+    $('loginErrPass').classList.remove('show');
+    $('logoutModalBg').classList.remove('show');
+    $('menuDropdown').classList.remove('show');
+    loginOverlay.classList.remove('hidden');
+});
+
+checkSavedLogin();
+
+function startGPS() {
+    if (!navigator.geolocation || !isHTTPS) return;
+    function onPos(pos) {
+        currentLat = pos.coords.latitude;
+        currentLng = pos.coords.longitude;
+        currentAccuracy = pos.coords.accuracy || Infinity;
+        gpsReady = true;
+        updatePlusCode();
+        if (window.GpsStamp && GpsStamp.preloadMapTile) GpsStamp.preloadMapTile(currentLat, currentLng);
+        fetchLocationName(currentLat, currentLng);
+    }
+    navigator.geolocation.getCurrentPosition(onPos, function () {}, {
+        enableHighAccuracy: true, timeout: 15000, maximumAge: 0
+    });
+    navigator.geolocation.watchPosition(onPos, function () {}, {
+        enableHighAccuracy: true, timeout: 30000, maximumAge: 5000
+    });
+}
+startGPS();
+
+$('camBtn').addEventListener('click', function () {
+    if (!isHTTPS) { showToast('HTTPS पर कैमरा नहीं चलेगी। गैलरी से फोटो चुनें।'); return; }
+    openCam();
+});
+$('galBtn').addEventListener('click', function () { fileInput.click(); });
+
+fileInput.addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            waitGpsThenStamp(e.target.result, GALLERY_MAX_WIDTH, GALLERY_QUALITY);
+        };
+        reader.readAsDataURL(this.files[0]);
+        this.value = '';
+    }
+});
+
+function showPreview() {
+    prevImg.src = capturedData;
+    phHolder.style.display = 'none'; captImg.style.display = 'block';
+    retakeBtn.style.display = 'inline-block'; photoArea.classList.add('show', 'captured');
+    $('errPhoto').classList.remove('show');
+    stampInfo.classList.add('show');
+}
+
+async function openCam() {
+    try {
+        camModal.classList.add('active');
+        camStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+        });
+        camVideo.srcObject = camStream;
+    } catch (e) { camModal.classList.remove('active'); showToast('कैमरा एक्सेस नहीं हो पा रहा। गैलरी से चुनें।'); }
+}
+function closeCam() {
+    if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
+    camVideo.srcObject = null; camModal.classList.remove('active');
+}
+async function capturePhoto() {
+    var v = camVideo, c = camCanvas;
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    var ctx = c.getContext('2d'); ctx.drawImage(v, 0, 0);
+    var raw = c.toDataURL('image/jpeg', 0.9);
+    closeCam();
+    waitGpsThenStamp(raw, COMPRESS_MAX_WIDTH, COMPRESS_QUALITY);
+}
+async function flipCam() {
+    facingMode = facingMode === 'environment' ? 'user' : 'environment';
+    if (camStream) camStream.getTracks().forEach(function (t) { t.stop(); });
+    try {
+        camStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: facingMode, width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false
+        });
+        camVideo.srcObject = camStream;
+    } catch (e) {}
+}
+function retakePhoto() {
+    capturedData = null; prevImg.src = '';
+    phHolder.style.display = 'flex'; captImg.style.display = 'none';
+    retakeBtn.style.display = 'none'; photoArea.classList.remove('captured');
+    stampInfo.classList.remove('show');
+    fileInput.value = '';
+}
+
+/* ========== SCREENSHOT UPLOAD ========== */
+ssArea.addEventListener('click', function () { ssFileInput.click(); });
+ssRetakeBtn.addEventListener('click', function (e) { e.stopPropagation(); ssFileInput.click(); });
+
+ssFileInput.addEventListener('change', function () {
+    if (this.files && this.files[0]) {
+        var file = this.files[0];
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            screenshotData = e.target.result;
+            ssPrevImg.src = screenshotData;
+            ssPlaceholder.style.display = 'none';
+            ssCapturedImg.style.display = 'block';
+            ssRetakeBtn.style.display = 'inline-block';
+            ssArea.classList.add('captured');
+        };
+        reader.readAsDataURL(file);
+        this.value = '';
+    }
+});
+
+function retakeScreenshot() {
+    screenshotData = null; ssPrevImg.src = '';
+    ssPlaceholder.style.display = 'flex';
+    ssCapturedImg.style.display = 'none';
+    ssRetakeBtn.style.display = 'none';
+    ssArea.classList.remove('captured');
+    ssFileInput.value = '';
+}
+
+var toastT = null;
+function showToast(m) {
+    $('toastText').textContent = m;
+    $('toastEl').classList.add('show');
+    clearTimeout(toastT); toastT = setTimeout(function () { $('toastEl').classList.remove('show'); }, 3000);
+}
+
+function validate(inp, eid) {
+    if (!inp.value.trim()) { inp.classList.add('err'); $(eid).classList.add('show'); return false; }
+    inp.classList.remove('err'); $(eid).classList.remove('show'); return true;
+}
+
+remSel.addEventListener('change', function () {
+    if (remSel.value) { remSel.classList.remove('err'); $('errRem').classList.remove('show'); }
+});
+
+divSel.addEventListener('change', function () {
+    if (divSel.value) { divSel.classList.remove('err'); $('errDivision').classList.remove('show'); }
+});
+
+function updateDriveBadge(success, msg) {
+    var locEl = $('sucSaveLoc');
+    var oldBadge = locEl.querySelector('.loc-badge.syncing');
+    if (oldBadge) {
+        oldBadge.className = 'loc-badge ' + (success ? 'drive' : 'fail');
+        oldBadge.innerHTML = success
+            ? '<i class="fab fa-google-drive"></i> Google Drive'
+            : '<i class="fas fa-exclamation"></i> ' + (msg || 'Drive Fail');
+    }
+}
+
+$('entryForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ok = true;
+
+    if (!validate(divSel, 'errDivision')) ok = false;
+
+    var acctVal = acctIn.value.trim();
+    if (!/^[0-9]{10}$/.test(acctVal)) {
+        acctIn.classList.add('err');
+        $('errAcct').classList.add('show');
+        ok = false;
+    }
+    if (!validate(remSel, 'errRem')) ok = false;
+    if (!capturedData) { $('errPhoto').classList.add('show'); ok = false; }
+
+    if (!ok) { showToast('कृपया सभी ज़रूरी फील्ड सही भरें'); return; }
+
+    var btn = $('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    var now = new Date();
+    var ds2 = now.toLocaleDateString('hi-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    var ts2 = now.toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    var fullDT = ds2 + ' | ' + ts2;
+    var acct = acctVal;
+    var kwhText = kwhArea.value.trim();
+    var kwhVal = kwhInput.value.trim();
+    var mdVal = mdInput.value.trim();
+    var meterNoVal = meterNoInput.value.trim();
+    var meterMakeVal = meterMakeInput.value.trim();
+
+    var stampLocText = currentLocationFull || currentLocationShort || '';
+    if (!stampLocText && gpsReady && currentLat !== null) {
+        stampLocText = 'Lat: ' + currentLat.toFixed(6) + ', Long: ' + currentLng.toFixed(6) + ' (±' + Math.round(currentAccuracy) + 'm)';
+    } else if (!stampLocText) {
+        stampLocText = 'N/A';
+    }
+
+    var year = now.getFullYear();
+    var month = ('0' + (now.getMonth() + 1)).slice(-2);
+    var day = ('0' + now.getDate()).slice(-2);
+    var isoDateOnly = year + '-' + month + '-' + day;
+
+    var entry = {
+        mobileNumber: loggedInMobile || 'N/A',
+        divisionName: divSel.value,
+        acctId: acct,
+        remarks: remSel.value,
+        kwh: kwhVal,
+        md: mdVal,
+        meterNumber: meterNoVal,
+        meterMake: meterMakeVal,
+        kwhOtherRemarks: kwhText,
+        latitude: currentLat,
+        longitude: currentLng,
+        gpsAccuracy: Math.round(currentAccuracy),
+        locationName: stampLocText,
+        dateTime: fullDT,
+        timestamp: now.getTime(),
+        dateOnly: isoDateOnly,
+        photo: capturedData,
+        screenshot: screenshotData || ''
+    };
+
+    var savedLocal = false;
+    try {
+        var ents = JSON.parse(localStorage.getItem('dvvnl_entries') || '[]');
+        ents.push(entry);
+        localStorage.setItem('dvvnl_entries', JSON.stringify(ents));
+        savedLocal = true;
+    } catch (e) {}
+    $('sucDateTime').textContent = fullDT;
+    var locHTML = '';
+    if (savedLocal) locHTML += '<span class="loc-badge local"><i class="fas fa-mobile-screen"></i> Local</span> ';
+
+    if (!SCRIPT_URL.includes('YOUR_URL')) {
+        locHTML += '<span class="loc-badge syncing" id="driveBadge"><i class="fas fa-spinner fa-spin"></i> Google Drive...</span> ';
+    } else {
+        locHTML += '<span class="loc-badge fail"><i class="fas fa-exclamation"></i> Drive URL सेट नहीं</span> ';
+    }
+    $('sucSaveLoc').innerHTML = locHTML;
+
+    formBody.style.display = 'none';
+    formHdr.style.display = 'none';
+    sucScreen.classList.add('active');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Entry';
+
+    if (!SCRIPT_URL.includes('YOUR_URL')) {
+        fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(entry),
+            redirect: 'follow'
+        })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+            if (data.drive || data.success) {
+                updateDriveBadge(true);
+                if (cachedReport) {
+                    cachedReport.total = (Number(cachedReport.total) || 0) + 1;
+                    cachedReport.today = (Number(cachedReport.today) || 0) + 1;
+                    cachedReport.month = (Number(cachedReport.month) || 0) + 1;
+                }
+            } else {
+                updateDriveBadge(false, data.msg || 'Drive एरर');
+            }
+        })
+        .catch(function (err) {
+            updateDriveBadge(false, 'नेटवर्क एरर');
+        });
+    }
+});
+
+$('newEntryBtn').addEventListener('click', function () {
+    $('entryForm').reset();
+    retakePhoto();
+    retakeScreenshot();
+    capturedData = null;
+    screenshotData = null;
+    document.querySelectorAll('.err').forEach(function (el) { el.classList.remove('err'); });
+    document.querySelectorAll('.field-error').forEach(function (el) { el.classList.remove('show'); });
+    digitCount.textContent = '0/10';
+    digitCount.className = 'digit-count';
+    sucScreen.classList.remove('active');
+    formHdr.style.display = 'flex';
+    formBody.style.display = 'block';
+    formCard.style.animation = 'none';
+    formCard.offsetHeight;
+    formCard.style.animation = 'slideU 0.4s ease-out';
+});
+
+retakeBtn.addEventListener('click', function () { retakePhoto(); });
+$('shutterBtn').addEventListener('click', capturePhoto);
+$('camCloseBtn').addEventListener('click', closeCam);
+$('flipBtn').addEventListener('click', flipCam);
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+        if (camModal.classList.contains('active')) closeCam();
+        if ($('logoutModalBg').classList.contains('show')) $('logoutModalBg').classList.remove('show');
+        if ($('reportModalBg').classList.contains('show')) $('reportModalBg').classList.remove('show');
+        if ($('menuDropdown').classList.contains('show')) $('menuDropdown').classList.remove('show');
+    }
+});
+</script>
+</body>
+</html>
