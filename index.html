@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Cross Check Entry - DVVNL</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+:root{--primary:#0a2463;--primary-light:#1e3a7b;--accent:#d4a017;--accent-light:#f0c040;--bg:#eef1f5;--card:#ffffff;--text:#1a1a2e;--text-muted:#6b7280;--border:#dde2e8;--danger:#dc2626;--success:#16a34a;--warning:#f59e0b;--shadow:0 2px 16px rgba(10,36,99,0.08)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;padding-top:64px}
+.login-overlay{position:fixed;inset:0;z-index:9999;background:linear-gradient(160deg,#0a2463 0%,#0d1f4e 40%,#162456 100%);display:flex;align-items:center;justify-content:center;padding:20px}
+.login-overlay.hidden{display:none}
+.login-card{width:100%;max-width:380px;background:rgba(255,255,255,0.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:36px 28px 32px}
+.login-logo{width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid var(--accent);margin:0 auto 18px;display:flex;align-items:center;justify-content:center}
+.login-logo img{width:100%;height:100%;object-fit:contain}
+.login-card h2{color:#fff;text-align:center;font-size:20px;font-weight:800;margin-bottom:4px}
+.login-sub{text-align:center;color:rgba(255,255,255,0.5);font-size:9px;font-weight:500;letter-spacing:.8px;text-transform:uppercase;margin-bottom:28px}
+.login-field{margin-bottom:18px}
+.login-field label{display:block;color:rgba(255,255,255,.7);font-size:11px;font-weight:600;margin-bottom:7px}
+.login-input-wrap{position:relative}
+.login-input-wrap i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.35)}
+.login-input-wrap input{width:100%;padding:13px 14px 13px 42px;font-family:'Poppins',sans-serif;font-size:14px;color:#fff;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:12px;outline:none}
+.login-input-wrap input.login-err{border-color:var(--danger)}
+.login-err-msg{font-size:10px;color:#ff6b6b;margin-top:5px;display:none}
+.login-err-msg.show{display:flex;align-items:center;gap:4px}
+.login-err-msg.center{justify-content:center;margin-top:12px}
+.login-btn{width:100%;padding:14px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--primary);background:linear-gradient(135deg,var(--accent),var(--accent-light));border:none;border-radius:12px;cursor:pointer;margin-top:6px}
+.login-hint{text-align:center;margin-top:18px;color:rgba(255,255,255,.35);font-size:10px}
+header{background:linear-gradient(135deg,var(--primary),var(--primary-light));position:fixed;top:0;left:0;right:0;z-index:100}
+.header-inner{display:flex;align-items:center;max-width:600px;margin:0 auto;padding:10px 14px;gap:10px}
+.logo-wrap{width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid rgba(212,160,23,.5)}
+.logo-wrap img{width:100%;height:100%;object-fit:contain}
+.header-title{flex:1;text-align:center}
+.header-title h1{color:#fff;font-size:16px;font-weight:700}
+.header-title p{color:var(--accent-light);font-size:8px;letter-spacing:.8px;text-transform:uppercase}
+.header-actions{display:flex;align-items:center;gap:6px}
+.user-chip{display:none;align-items:center;gap:6px;background:rgba(255,255,255,.12);border:1px solid rgba(212,160,23,.45);border-radius:20px;padding:5px 12px 5px 9px;color:#fff;font-size:11px;max-width:120px}
+.user-chip.show{display:flex}
+.user-chip span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.header-icon-btn,.logout-btn{width:38px;height:38px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+.menu-wrap{position:relative}
+.menu-dropdown{position:absolute;top:48px;right:0;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.18);min-width:220px;display:none;z-index:200;border:1px solid var(--border);overflow:hidden}
+.menu-dropdown.show{display:block}
+.menu-item{display:flex;align-items:center;gap:10px;padding:12px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:1px solid var(--border)}
+.menu-item:last-child{border-bottom:none}
+.menu-badge{margin-left:auto;background:var(--danger);color:#fff;border-radius:10px;font-size:10px;padding:1px 7px;display:none}
+.menu-badge.show{display:inline-block}
+.report-modal-bg,.logout-modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:5000;align-items:center;justify-content:center;padding:20px}
+.report-modal-bg.show,.logout-modal-bg.show{display:flex}
+.report-modal,.logout-modal{background:#fff;border-radius:18px;padding:24px 20px 20px;max-width:340px;width:100%}
+.report-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.report-modal-head h3{font-size:16px;font-weight:700;color:var(--primary)}
+.report-close{width:30px;height:30px;border-radius:50%;border:none;background:#f1f3f5;cursor:pointer}
+.report-stat{background:rgba(10,36,99,.04);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px}
+.stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff}
+.stat-icon.total{background:var(--primary)}
+.stat-icon.today{background:var(--accent)}
+.stat-icon.month{background:var(--success)}
+.stat-value{font-size:22px;font-weight:800}
+.stat-sub{font-size:11px;color:var(--text-muted);font-weight:500}
+#reportDate{text-align:center;font-size:11px;color:var(--text-muted);margin-top:6px}
+.sync-now-btn{width:100%;padding:12px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:12px;cursor:pointer}
+.sync-now-btn:disabled{opacity:.55}
+.sync-status{text-align:center;font-size:11px;color:var(--text-muted);margin-top:10px}
+.https-warn{max-width:600px;margin:0 auto;padding:8px 14px;display:none;font-size:10px;color:var(--danger)}
+.https-warn.show{display:flex}
+main{max-width:600px;margin:0 auto;padding:14px 12px 32px}
+.form-card{background:#fff;border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
+.form-card-header{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.form-body{padding:18px 16px 22px}
+.field-group{margin-bottom:16px}
+.field-group label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+.hindi{display:block;font-size:10px;font-weight:400;color:var(--text-muted)}
+.req{color:var(--danger)}
+.opt{color:var(--success);font-size:10px;margin-left:4px}
+.input-wrap{position:relative}
+.input-wrap i.fi{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted)}
+.input-wrap input,.input-wrap select,.input-wrap textarea{width:100%;padding:12px 12px 12px 38px;font-family:'Poppins',sans-serif;font-size:13px;background:#f7f8fa;border:1.5px solid var(--border);border-radius:10px;outline:none;appearance:none}
+.input-wrap textarea{min-height:70px}
+.input-wrap input.err,.input-wrap select.err{border-color:var(--danger);background:#fef2f2}
+.field-error{font-size:10px;color:var(--danger);margin-top:4px;display:none}
+.field-error.show{display:flex}
+.digit-count{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:10px}
+.two-col-row{display:flex;gap:12px;margin-bottom:16px}
+.two-col-row .field-group{flex:1;margin-bottom:0}
+.photo-btns{display:flex;gap:8px;margin-bottom:8px}
+.photo-btn{flex:1;padding:10px;font-size:11px;font-weight:600;border:1.5px solid var(--border);border-radius:10px;background:#f7f8fa;cursor:pointer}
+.photo-area{border:2px dashed var(--border);border-radius:14px;padding:18px;text-align:center;display:none}
+.photo-area.show{display:block}
+.captured-img{display:none}
+.captured-img img{width:100%;border-radius:10px}
+.retake-btn{display:none;margin-top:8px;padding:7px 18px;border:1.5px solid var(--primary);background:rgba(10,36,99,.06);border-radius:8px;color:var(--primary);cursor:pointer}
+.stamp-info{margin-top:6px;font-size:9px;color:var(--success);display:none;justify-content:center}
+.stamp-info.show{display:flex}
+.submit-btn{width:100%;padding:14px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:12px;cursor:pointer}
+.submit-btn:disabled{opacity:.65}
+.success-screen{display:none;text-align:center;padding:40px 20px}
+.success-screen.active{display:block}
+.new-entry-btn{padding:13px 32px;font-size:13px;font-weight:700;color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary-light));border:none;border-radius:12px;cursor:pointer}
+
+/* Full-Screen Camera View Updates */
+.cam-modal{display:none;position:fixed;inset:0;background:#000;z-index:1000;flex-direction:column;justify-content:space-between;padding:16px 12px}
+.cam-modal.active{display:flex}
+.cam-video-box{width:100%;flex:1;display:flex;align-items:center;justify-content:center;border-radius:16px;overflow:hidden;background:#000}
+.cam-video-box video{width:100%;height:100%;object-fit:cover;display:block}
+.cam-video-box canvas{display:none}
+.cam-controls{margin-top:14px;margin-bottom:10px;display:flex;gap:24px;align-items:center;justify-content:center;width:100%}
+.shutter-btn{width:68px;height:68px;border-radius:50%;border:3px solid #fff;background:transparent;position:relative;cursor:pointer}
+.shutter-btn::after{content:'';position:absolute;inset:7px;border-radius:50%;background:#fff}
+.flip-btn,.cam-close{width:44px;height:44px;border-radius:50%;border:none;background:rgba(255,255,255,.18);color:#fff;cursor:pointer;font-size:16px}
+.toast-msg{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--danger);color:#fff;padding:10px 20px;border-radius:10px;font-size:12px;z-index:2000;display:flex;gap:6px}
+.toast-msg.show{transform:translateX(-50%) translateY(0)}
+.footer-note{text-align:center;padding:16px;font-size:10px;color:var(--text-muted)}
+.logout-modal{text-align:center}
+.logout-modal-btns{display:flex;gap:10px;margin-top:16px}
+.logout-modal-btns button{flex:1;padding:11px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:600;border-radius:10px;border:none;cursor:pointer}
+.lm-cancel{background:#f1f3f5}
+.lm-confirm{background:var(--danger);color:#fff}
+.lm-icon{font-size:40px;margin-bottom:12px;display:block}
+.loc-badge{padding:3px 10px;border-radius:10px;font-size:9px;font-weight:600}
+.loc-badge.local{background:rgba(10,36,99,.08);color:var(--primary)}
+.loc-badge.drive{background:rgba(22,163,74,.1);color:var(--success)}
+.loc-badge.fail{background:rgba(220,38,38,.1);color:var(--danger)}
+.loc-badge.syncing{background:rgba(245,158,11,.12);color:var(--warning)}
+.suc-datetime{display:inline-flex;gap:6px;background:rgba(10,36,99,.05);padding:6px 14px;border-radius:16px;font-size:11px;color:var(--primary);margin-bottom:6px}
+.ph-placeholder{display:flex;flex-direction:column;align-items:center;gap:8px}
+.cam-circle{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-light));display:flex;align-items:center;justify-content:center;color:#fff}
+.acct-dup-title{font-size:16px;font-weight:800;color:var(--danger);margin-bottom:6px}
+.acct-dup-sub{font-size:13px;color:var(--text);font-weight:600}
+/* नोटिस पॉप-अप लॉगिन स्क्रीन के ऊपर दिखे */
+#noticeModalBg{z-index:10000}
+</style>
+</head>
+<body>
+<div class="login-overlay" id="loginOverlay">
+<div class="login-card">
+<div class="login-logo">
+<img src="logo.png" alt="DVVNL Logo">
+</div>
+<h2>Cross Check Entry</h2>
+<p class="login-sub">दक्षिणांचल विद्युत वितरण निगम लिमिटेड</p>
+<div class="login-field">
+<label>Mobile Number <span style="color:var(--danger)">*</span></label>
+<div class="login-input-wrap">
+<input type="tel" id="loginMobile" placeholder="10 अंकों का रजिस्टर्ड मोबाइल नंबर" maxlength="10" inputmode="numeric" autocomplete="off">
+<i class="fas fa-mobile-screen-button"></i>
+</div>
+<div class="login-err-msg" id="loginErrMob">कृपया 10 अंकों का मोबाइल नंबर दर्ज करें</div>
+</div>
+<div class="login-field">
+<label>Password <span style="color:var(--danger)">*</span></label>
+<div class="login-input-wrap">
+<input type="password" id="loginPass" placeholder="पासवर्ड दर्ज करें" autocomplete="off">
+<i class="fas fa-lock"></i>
+</div>
+<div class="login-err-msg" id="loginErrPass">पासवर्ड गलत है</div>
+</div>
+<button type="button" class="login-btn" id="loginBtn"><i class="fas fa-right-to-bracket"></i>&nbsp; Login</button>
+<div class="login-err-msg center" id="loginErrGen"><span id="loginErrGenText">यह मोबाइल नंबर रजिस्टर्ड नहीं है</span></div>
+<p class="login-hint">DVVNL Cross Check Data Entry System © 2026</p>
+</div>
+</div>
+<div class="logout-modal-bg" id="logoutModalBg">
+<div class="logout-modal">
+<h3>Logout करें?</h3>
+<p>क्या आप वाकई लॉगआउट करना चाहते हैं?</p>
+<div class="logout-modal-btns">
+<button class="lm-cancel" id="logoutCancel">नहीं</button>
+<button class="lm-confirm" id="logoutConfirm">हाँ, Logout</button>
+</div>
+</div>
+</div>
+<div class="logout-modal-bg" id="acctDupModalBg">
+<div class="logout-modal">
+<i class="fas fa-circle-exclamation lm-icon" style="color:var(--danger)"></i>
+<div class="acct-dup-title">Acct ID already filled</div>
+<div class="acct-dup-sub">यह खाता संख्या पहले से भरी हुई है</div>
+<div class="logout-modal-btns">
+<button class="lm-confirm" id="acctDupOk">OK</button>
+</div>
+</div>
+</div>
+<!-- नया पॉप-अप: रजिस्टर्ड नहीं यूजर / सेशन समाप्त -->
+<div class="logout-modal-bg" id="noticeModalBg">
+<div class="logout-modal">
+<i class="fas fa-circle-exclamation lm-icon" style="color:var(--danger)"></i>
+<div class="acct-dup-title" id="noticeTitle">User Not Registered</div>
+<div class="acct-dup-sub" id="noticeMsg">यह मोबाइल नंबर Users Sheet में रजिस्टर्ड नहीं है। कृपया एडमिन से संपर्क करें।</div>
+<div class="logout-modal-btns">
+<button class="lm-confirm" id="noticeOk">OK</button>
+</div>
+</div>
+</div>
+<div class="report-modal-bg" id="reportModalBg">
+<div class="report-modal">
+<div class="report-modal-head">
+<h3>Report</h3>
+<button class="report-close" id="reportCloseBtn"><i class="fas fa-xmark"></i></button>
+</div>
+<div class="report-stat">
+<div class="stat-icon total"><i class="fas fa-database"></i></div>
+<div>
+<div>Total Data Count</div>
+<div class="stat-sub">कुल डेटा</div>
+<div class="stat-value" id="reportTotal">0</div>
+</div>
+</div>
+<div class="report-stat">
+<div class="stat-icon today"><i class="fas fa-calendar-day"></i></div>
+<div>
+<div>Today's Count</div>
+<div class="stat-sub">आज का डेटा</div>
+<div class="stat-value" id="reportToday">0</div>
+</div>
+</div>
+<div class="report-stat">
+<div class="stat-icon month"><i class="fas fa-calendar-alt"></i></div>
+<div>
+<div>This Month's Count</div>
+<div class="stat-sub">इस महीने का डेटा</div>
+<div class="stat-value" id="reportMonth">0</div>
+</div>
+</div>
+<div id="reportDate"></div>
+</div>
+</div>
+<div class="report-modal-bg" id="syncModalBg">
+<div class="report-modal">
+<div class="report-modal-head">
+<h3>Data Sync</h3>
+<button class="report-close" id="syncCloseBtn"><i class="fas fa-xmark"></i></button>
+</div>
+<div class="report-stat">
+<div class="stat-icon today"><i class="fas fa-clock"></i></div>
+<div>
+<div>Pending Records</div>
+<div class="stat-value" id="syncPendingCount">0</div>
+</div>
+</div>
+<button type="button" class="sync-now-btn" id="syncNowBtn">Sync Now / अभी सिंक करें</button>
+<div class="sync-status" id="syncStatusText">नेट आने पर pending data auto sync होगा</div>
+</div>
+</div>
+<header>
+<div class="header-inner">
+<div class="logo-wrap"><img src="logo.png" alt="DVVNL Logo"></div>
+<div class="header-title">
+<h1>Cross Check Entry</h1>
+<p>दक्षिणांचल विद्युत वितरण निगम लिमिटेड</p>
+</div>
+<div class="header-actions">
+<div class="user-chip" id="userChip"><i class="fas fa-user-circle"></i><span id="userChipName">User</span></div>
+<div class="menu-wrap">
+<button class="header-icon-btn" id="menuBtn"><i class="fas fa-ellipsis-vertical"></i></button>
+<div class="menu-dropdown" id="menuDropdown">
+<div class="menu-item" id="refreshMenuBtn"><i class="fas fa-arrows-rotate"></i> Refresh</div>
+<div class="menu-item" id="reportMenuBtn"><i class="fas fa-chart-bar"></i> Report / रिपोर्ट</div>
+<div class="menu-item" id="syncMenuBtn"><i class="fas fa-cloud-arrow-up"></i> Data Sync / सिंक <span class="menu-badge" id="syncMenuBadge">0</span></div>
+</div>
+</div>
+<button class="logout-btn" id="logoutBtn"><i class="fas fa-right-from-bracket"></i></button>
+</div>
+</div>
+</header>
+<div class="https-warn" id="httpsWarn">HTTPS पर नहीं है — GPS और Camera काम नहीं करेंगे।</div>
+<main>
+<div class="form-card" id="formCard">
+<div class="form-card-header" id="formHeader"><i class="fas fa-pen-to-square"></i><span>Cross Check Entry Details / साइड निरीक्षण विवरण</span></div>
+<div class="form-body" id="formBody">
+<form id="entryForm" novalidate>
+<div class="field-group">
+<label for="divisionName">Division Name <span class="req">*</span><span class="hindi">डिवीजन का नाम चुनें</span></label>
+<div class="input-wrap select-wrap">
+<select id="divisionName">
+<option value="" disabled selected>-- डिवीजन चुनें --</option>
+<option value="EDD FIROZABAD">EDD FIROZABAD</option>
+<option value="EDD JASRANA">EDD JASRANA</option>
+<option value="EDD SHIKOHABAD">EDD SHIKOHABAD</option>
+<option value="EDD SIRSAGANJ">EDD SIRSAGANJ</option>
+<option value="EDD TUNDLA">EDD TUNDLA</option>
+</select>
+<i class="fas fa-building fi"></i>
+</div>
+<div class="field-error" id="errDivision">कृपया डिवीजन का नाम चुनें</div>
+</div>
+<div class="field-group">
+<label for="acctId">Acct ID <span class="req">*</span><span class="hindi">उपभोक्ता की खाता संख्या (ठीक 10 अंक)</span></label>
+<div class="input-wrap">
+<input type="tel" id="acctId" placeholder="10 अंकों की खाता संख्या" maxlength="10" inputmode="numeric" autocomplete="off">
+<i class="fas fa-hashtag fi"></i>
+<span class="digit-count" id="digitCount">0/10</span>
+</div>
+<div class="field-error" id="errAcct">खाता संख्या ठीक से 10 अंक भरें</div>
+</div>
+<div class="field-group">
+<label for="remarks">Remarks <span class="req">*</span><span class="hindi">टिप्पणी चुनें</span></label>
+<div class="input-wrap select-wrap">
+<select id="remarks">
+<option value="" disabled selected>-- टिप्पणी चुनें --</option>
+<option>Line Disconnect</option>
+<option>Meter Defective</option>
+<option>House Lock</option>
+<option>No Meter</option>
+<option>Reading Mismatch</option>
+<option>Meter Box Dirty</option>
+<option>Meter Box Improper</option>
+<option>Probe Not Success</option>
+</select>
+<i class="fas fa-list fi"></i>
+</div>
+<div class="field-error" id="errRem">कृपया टिप्पणी चुनें</div>
+</div>
+<div class="field-group">
+<label for="villageName">Village Name <span class="req">*</span><span class="hindi">गाँव का नाम भरें</span></label>
+<div class="input-wrap">
+<input type="text" id="villageName" placeholder="गाँव का नाम लिखें" autocomplete="off">
+<i class="fas fa-location-dot fi"></i>
+</div>
+<div class="field-error" id="errVillage">कृपया गाँव का नाम भरें</div>
+</div>
+<div class="two-col-row">
+<div class="field-group">
+<label for="kwhInput">KWH <span class="opt">(Optional)</span></label>
+<div class="input-wrap">
+<input type="text" id="kwhInput" placeholder="जैसे: 01234" inputmode="decimal" autocomplete="off">
+<i class="fas fa-bolt fi"></i>
+</div>
+</div>
+<div class="field-group">
+<label for="mdInput">MD <span class="opt">(Optional)</span></label>
+<div class="input-wrap">
+<input type="text" id="mdInput" placeholder="जैसे: 5.6" inputmode="decimal" autocomplete="off">
+<i class="fas fa-tachograph-digital fi"></i>
+</div>
+</div>
+</div>
+<div class="field-group">
+<label for="kwhRemarks">Other Remarks <span class="opt">(Optional)</span></label>
+<div class="input-wrap">
+<textarea id="kwhRemarks" rows="3" placeholder="अन्य टिप्पणी"></textarea>
+<i class="fas fa-pen fi" style="top:18px;transform:none"></i>
+</div>
+</div>
+<div class="photo-section">
+<label>Photo Capture <span class="req">*</span><span class="hindi">कैमरा से फोटो कैप्चर कीजिए </span></label>
+<div class="photo-btns">
+<button type="button" class="photo-btn" id="camBtn"><i class="fas fa-camera"></i> कैमरा</button>
+<button type="button" class="photo-btn" id="galBtn"><i class="fas fa-image"></i> गैलरी</button>
+</div>
+<input type="file" accept="image/*" id="fileInput" style="display:none">
+<div class="photo-area" id="photoArea">
+<div class="ph-placeholder" id="phPlaceholder">
+<div class="cam-circle"><i class="fas fa-camera"></i></div>
+<p><b>क्लिक करें</b> फोटो के लिए</p>
+</div>
+<div class="captured-img" id="capturedImg"><img id="prevImg" src="" alt="Photo"></div>
+<div class="stamp-info" id="stampInfo">GPS Stamp लग गया</div>
+<button type="button" class="retake-btn" id="retakeBtn">फोटो बदलें</button>
+</div>
+<div class="field-error" id="errPhoto">फोटो चुनना अनिवार्य है</div>
+</div>
+<button type="submit" class="submit-btn" id="submitBtn">Submit Entry</button>
+</form>
+</div>
+<div class="success-screen" id="successScreen">
+<h2>Your Record is Save</h2>
+<p>आपकी एंट्री सफलतापूर्वक सेव हो गई है</p>
+<div class="suc-datetime"><span id="sucDateTime"></span></div>
+<div id="sucSaveLoc"></div>
+<br>
+<button type="button" class="new-entry-btn" id="newEntryBtn">New Entry</button>
+</div>
+</div>
+<p class="footer-note">Cross Check Entry System - DVVNL © 2026</p>
+</main>
+<div class="cam-modal" id="camModal">
+<div style="width:100%;max-width:600px;display:flex;justify-content:space-between;align-items:center;color:#fff;padding:4px 8px">
+<h3 style="font-size:15px;font-weight:600">फोटो कैप्चर करें</h3>
+<button class="cam-close" id="camCloseBtn"><i class="fas fa-xmark"></i></button>
+</div>
+<div class="cam-video-box">
+<video id="camVideo" autoplay playsinline muted></video>
+<canvas id="camCanvas"></canvas>
+</div>
+<div class="cam-controls">
+<button class="flip-btn" id="flipBtn"><i class="fas fa-camera-rotate"></i></button>
+<button class="shutter-btn" id="shutterBtn"></button>
+<div style="width:44px"></div>
+</div>
+</div>
+<div class="toast-msg" id="toastEl"><span id="toastText"></span></div>
+<script>
+/* GPS Map Camera style stamp */
+(function (global) {
+var ALPHABET = '23456789CFGHJMPQRVWX';
+function encodeOLC(lat, lng) {
+if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) return { full: '', short: '' };
+lat = Math.min(89.99999999, Math.max(-90, Number(lat)));
+lng = Number(lng);
+lng = ((lng + 180) % 360 + 360) % 360 - 180;
+var latVal = lat + 90, lngVal = lng + 180, code = '', latRes = 20, lngRes = 20;
+for (var i = 0; i < 5; i++) {
+var latDigit = Math.min(19, Math.floor(latVal / latRes));
+var lngDigit = Math.min(19, Math.floor(lngVal / lngRes));
+code += ALPHABET.charAt(latDigit) + ALPHABET.charAt(lngDigit);
+latVal -= latDigit * latRes; lngVal -= lngDigit * lngRes;
+if (i < 4) { latRes /= 20; lngRes /= 20; }
+}
+var row = Math.min(4, Math.floor(latVal / (latRes / 5)));
+var col = Math.min(3, Math.floor(lngVal / (lngRes / 4)));
+code += ALPHABET.charAt(row * 4 + col);
+return { full: code.substring(0, 8) + '+' + code.substring(8), short: (code.substring(4, 8) + '+' + code.substring(8)).toLowerCase() };
+}
+function stampDateTime(now) {
+now = now || new Date();
+var ist = new Date(now.getTime() + (5 * 60 + 30) * 60 * 1000);
+var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+var dd = ('0' + ist.getUTCDate()).slice(-2);
+var mm = ('0' + (ist.getUTCMonth() + 1)).slice(-2);
+var yyyy = ist.getUTCFullYear();
+var h24 = ist.getUTCHours();
+var ampm = h24 >= 12 ? 'PM' : 'AM';
+var h = h24 % 12; if (h === 0) h = 12;
+return days[ist.getUTCDay()] + ', ' + dd + '/' + mm + '/' + yyyy + ' ' + ('0' + h).slice(-2) + ':' + ('0' + ist.getUTCMinutes()).slice(-2) + ' ' + ampm + ' GMT +05:30';
+}
+function uniqueJoin(parts) {
+var out = [], seen = {};
+parts.forEach(function (p) {
+if (!p) return; p = String(p).trim(); if (!p) return;
+var key = p.toLowerCase(); if (seen[key]) return; seen[key] = true; out.push(p);
+});
+return out.join(', ');
+}
+function buildStampLines(info) {
+info = info || {};
+var village = info.village || '', city = info.city || '', district = info.district || '', state = info.state || '', pin = info.postcode || '', country = info.country || 'India';
+var lat = info.lat, lng = info.lng, plus = info.plusCode || '';
+if (!plus && lat != null && lng != null) { var enc = encodeOLC(lat, lng); plus = enc ? enc.short : ''; }
+var title = uniqueJoin([village || city || district, state, country]) || 'Location: Not Available';
+var statePin = state ? (state + (pin ? ' ' + pin : '')) : (pin || '');
+var addrCore = uniqueJoin([city || village, district, statePin, country]);
+var address = plus ? (plus + (addrCore ? ', ' + addrCore : '')) : (addrCore || 'Address: Not Available');
+var latLong = (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) ? ('Lat ' + Number(lat).toFixed(7) + '\u00b0 Long ' + Number(lng).toFixed(6) + '\u00b0') : 'Lat/Long: Not Available';
+return { title: title, address: address, latLong: latLong, datetime: stampDateTime(info.now) };
+}
+function roundRect(ctx, x, y, w, h, r) {
+r = Math.min(r, w / 2, h / 2);
+ctx.beginPath(); ctx.moveTo(x + r, y);
+ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+function drawIndianFlag(ctx, x, y, w) {
+var h = Math.max(12, Math.round(w * 0.67));
+ctx.save(); roundRect(ctx, x, y, w, h, Math.max(1, w * 0.08)); ctx.clip();
+ctx.fillStyle = '#FF9933'; ctx.fillRect(x, y, w, h / 3);
+ctx.fillStyle = '#FFFFFF'; ctx.fillRect(x, y + h / 3, w, h / 3);
+ctx.fillStyle = '#138808'; ctx.fillRect(x, y + 2 * h / 3, w, h / 3);
+var cx = x + w / 2, cy = y + h / 2, r = h * 0.14;
+ctx.strokeStyle = '#000080'; ctx.lineWidth = Math.max(0.8, w / 28);
+ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+ctx.lineWidth = Math.max(0.6, w / 40);
+for (var i = 0; i < 24; i++) { var a = (i / 24) * Math.PI * 2; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); ctx.stroke(); }
+ctx.restore(); return h;
+}
+function drawRedPin(ctx, x, y, size) {
+ctx.save(); ctx.translate(x, y);
+ctx.shadowColor = 'rgba(0,0,0,0.45)'; ctx.shadowBlur = size * 0.18; ctx.shadowOffsetY = size * 0.08;
+ctx.fillStyle = '#E53935'; ctx.beginPath();
+ctx.moveTo(0, size * 0.52);
+ctx.bezierCurveTo(-size * 0.55, size * 0.05, -size * 0.42, -size * 0.55, 0, -size * 0.55);
+ctx.bezierCurveTo(size * 0.42, -size * 0.55, size * 0.55, size * 0.05, 0, size * 0.52);
+ctx.closePath(); ctx.fill();
+ctx.shadowColor = 'transparent'; ctx.fillStyle = '#FFFFFF';
+ctx.beginPath(); ctx.arc(0, -size * 0.22, size * 0.16, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+}
+function latLngToTile(lat, lng, zoom) {
+var n = Math.pow(2, zoom);
+var x = Math.floor((lng + 180) / 360 * n);
+var latRad = lat * Math.PI / 180;
+var y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
+return { x: x, y: y, z: zoom };
+}
+var MAP_ZOOM = 18, mapTileCache = {}, mapTileLoading = {}, mapTileWaiters = {};
+function tileKey(lat, lng) { var t = latLngToTile(lat, lng, MAP_ZOOM); return t.z + '/' + t.y + '/' + t.x; }
+function copyTile(im) { var c = document.createElement('canvas'); c.width = im.width || 256; c.height = im.height || 256; c.getContext('2d').drawImage(im, 0, 0); return c; }
+function notifyWaiters(key, tile) { var list = mapTileWaiters[key] || []; mapTileWaiters[key] = []; list.forEach(function (fn) { try { fn(tile); } catch (e) {} }); }
+function preloadMapTile(lat, lng) {
+if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) return;
+var t = latLngToTile(lat, lng, MAP_ZOOM); var key = t.z + '/' + t.y + '/' + t.x;
+if (mapTileCache[key] || mapTileLoading[key]) return;
+mapTileLoading[key] = true;
+var urls = ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/' + t.z + '/' + t.y + '/' + t.x, 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/' + t.z + '/' + t.y + '/' + t.x];
+var idx = 0;
+function tryNext() {
+if (idx >= urls.length) { mapTileLoading[key] = false; notifyWaiters(key, null); return; }
+var im = new Image(); im.crossOrigin = 'anonymous';
+im.onload = function () { try { mapTileCache[key] = copyTile(im); } catch (e) {} mapTileLoading[key] = false; notifyWaiters(key, mapTileCache[key] || null); };
+im.onerror = function () { idx++; tryNext(); };
+im.src = urls[idx];
+}
+tryNext();
+}
+function getCachedMapTile(lat, lng) { if (lat == null || lng == null) return null; return mapTileCache[tileKey(lat, lng)] || null; }
+function waitForMapTile(lat, lng, ms, cb) {
+var cached = getCachedMapTile(lat, lng); if (cached) { cb(cached); return; }
+if (lat == null || lng == null) { cb(null); return; }
+var key = tileKey(lat, lng); preloadMapTile(lat, lng); var done = false;
+var timer = setTimeout(function () { if (done) return; done = true; cb(getCachedMapTile(lat, lng)); }, ms || 700);
+if (!mapTileWaiters[key]) mapTileWaiters[key] = [];
+mapTileWaiters[key].push(function (tile) { if (done) return; done = true; clearTimeout(timer); cb(tile || getCachedMapTile(lat, lng)); });
+}
+function wrapText(ctx, text, maxW) {
+if (!(maxW > 8)) maxW = 8;
+var raw = String(text == null ? '' : text), lines = [], cur = '';
+function flush() { if (cur) { lines.push(cur); cur = ''; } }
+function addChunk(chunk) {
+var i, ch, next, piece = '';
+for (i = 0; i < chunk.length; i++) {
+ch = chunk.charAt(i); next = piece + ch;
+if (piece && ctx.measureText(next).width > maxW) { lines.push(piece); piece = ch; } else piece = next;
+}
+if (piece) cur = piece;
+}
+function addToken(token) {
+var test = cur ? (cur + ' ' + token) : token;
+if (cur && ctx.measureText(test).width > maxW) { flush(); test = token; }
+if (ctx.measureText(test).width > maxW) { addChunk(test); } else cur = test;
+}
+var parts = raw.split(/\s+/);
+for (var i = 0; i < parts.length; i++) { if (parts[i]) addToken(parts[i]); }
+flush(); return lines.length ? lines : [''];
+}
+function drawGpsStamp(ctx, cw, ch, info, mapImg) {
+var lines = buildStampLines(info);
+var s = cw / 1080; if (s < 0.55) s = 0.55; if (s > 1.4) s = 1.4;
+var pad, mapSize, gap, titleFs, bodyFs, titleLh, bodyLh, boxPadX, boxPadY, flagW;
+var overlayBottomPad, minTop, titleLines, addrLines, latLines, dateLines, textH, boxH, boxY;
+var mapX, mapY, textBoxX, textBoxW, textBoxY, textBoxH, titleMax, addrMax, innerW, guard = 0;
+var badgeH, badgeGap;
+function layoutStamp() {
+pad = Math.round(16 * s); mapSize = Math.round(186 * s); gap = Math.round(12 * s);
+titleFs = Math.round(38 * s); bodyFs = Math.round(25 * s);
+titleLh = Math.round(titleFs * 1.2); bodyLh = Math.round(bodyFs * 1.36);
+boxPadX = Math.round(16 * s); boxPadY = Math.round(14 * s); flagW = Math.round(40 * s);
+overlayBottomPad = Math.round(16 * s);
+badgeH = Math.round(28 * s); badgeGap = Math.round(10 * s);
+minTop = Math.round(10 * s) + badgeH + badgeGap;
+mapX = pad; textBoxX = mapX + mapSize + gap; textBoxW = Math.max(48, cw - textBoxX - pad);
+innerW = Math.max(24, textBoxW - boxPadX * 2);
+titleMax = Math.max(24, innerW - flagW - Math.round(10 * s)); addrMax = innerW;
+ctx.font = '700 ' + titleFs + 'px Poppins, Roboto, Arial, sans-serif';
+titleLines = wrapText(ctx, lines.title, titleMax);
+ctx.font = '500 ' + bodyFs + 'px Poppins, Roboto, Arial, sans-serif';
+addrLines = wrapText(ctx, lines.address, addrMax);
+latLines = wrapText(ctx, lines.latLong, addrMax);
+dateLines = wrapText(ctx, lines.datetime, addrMax);
+textH = titleLines.length * titleLh + addrLines.length * bodyLh + latLines.length * bodyLh + dateLines.length * bodyLh + Math.round(8 * s) + boxPadY * 2;
+boxH = Math.max(mapSize, textH); boxY = ch - overlayBottomPad - boxH;
+}
+layoutStamp();
+while (boxY < minTop && s > 0.32 && guard++ < 8) { s *= 0.86; layoutStamp(); }
+if (boxY < minTop) { boxY = minTop; boxH = Math.max(48, ch - overlayBottomPad - boxY); }
+if (mapSize > boxH) mapSize = boxH;
+var mapW = mapSize, mapH = boxH;
+mapY = boxY; textBoxY = boxY; textBoxH = boxH;
+ctx.save(); ctx.fillStyle = 'rgba(20, 22, 28, 0.72)'; roundRect(ctx, textBoxX, textBoxY, textBoxW, textBoxH, Math.round(18 * s)); ctx.fill(); ctx.restore();
+ctx.save(); roundRect(ctx, mapX, mapY, mapW, mapH, Math.round(16 * s)); ctx.clip();
+if (mapImg) {
+var iw = mapImg.width, ih = mapImg.height, sc = Math.max(mapW / iw, mapH / ih);
+ctx.drawImage(mapImg, mapX + (mapW - iw * sc) / 2, mapY + (mapH - ih * sc) / 2, iw * sc, ih * sc);
+}
+else { ctx.fillStyle = '#2b3a28'; ctx.fillRect(mapX, mapY, mapW, mapH); }
+ctx.restore();
+ctx.save(); roundRect(ctx, mapX, mapY, mapW, mapH, Math.round(16 * s)); ctx.strokeStyle = 'rgba(255,255,255,0.22)'; ctx.lineWidth = Math.max(2, 2 * s); ctx.stroke(); ctx.restore();
+drawRedPin(ctx, mapX + mapW / 2, mapY + mapH / 2, Math.round(Math.min(mapW, mapH) * 0.28));
+var tx = textBoxX + boxPadX, ty = textBoxY + boxPadY + Math.round(2 * s);
+ctx.save(); roundRect(ctx, textBoxX, textBoxY, textBoxW, textBoxH, Math.round(18 * s)); ctx.clip();
+ctx.textBaseline = 'top'; ctx.fillStyle = '#FFFFFF'; ctx.font = '700 ' + titleFs + 'px Poppins, Roboto, Arial, sans-serif';
+titleLines.forEach(function (ln, i) { ctx.fillText(ln, tx, ty + i * titleLh); });
+var lastTitle = titleLines[titleLines.length - 1] || '';
+drawIndianFlag(ctx, tx + ctx.measureText(lastTitle).width + Math.round(8 * s), ty + (titleLines.length - 1) * titleLh + Math.round(titleFs * 0.12), flagW);
+var by = ty + titleLines.length * titleLh + Math.round(6 * s);
+ctx.font = '500 ' + bodyFs + 'px Poppins, Roboto, Arial, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.92)';
+addrLines.forEach(function (ln, i) { ctx.fillText(ln, tx, by + i * bodyLh); });
+var ly = by + addrLines.length * bodyLh + Math.round(2 * s);
+latLines.forEach(function (ln, i) { ctx.fillText(ln, tx, ly + i * bodyLh); });
+var dy = ly + latLines.length * bodyLh;
+dateLines.forEach(function (ln, i) { ctx.fillText(ln, tx, dy + i * bodyLh); });
+ctx.restore();
+var badgeFs = Math.round(13 * s); ctx.font = '600 ' + badgeFs + 'px Poppins, Roboto, Arial, sans-serif';
+var badgeLabel = 'GPS Map Camera', badgePadX = Math.round(11 * s), iconW = Math.round(15 * s);
+var badgeW = ctx.measureText(badgeLabel).width + badgePadX * 2 + iconW + Math.round(6 * s);
+var badgeX = textBoxX + textBoxW - badgeW, badgeY = textBoxY - badgeH - badgeGap;
+if (badgeY < 8) { badgeY = textBoxY + Math.round(8 * s); badgeX = textBoxX + textBoxW - badgeW - Math.round(10 * s); }
+ctx.save(); ctx.fillStyle = 'rgba(28, 32, 38, 0.78)'; roundRect(ctx, badgeX, badgeY, badgeW, badgeH, badgeH / 2); ctx.fill();
+ctx.fillStyle = '#FFFFFF'; ctx.textBaseline = 'middle';
+var bcx = badgeX + badgePadX + iconW / 2, bcy = badgeY + badgeH / 2;
+ctx.beginPath(); ctx.arc(bcx, bcy, iconW * 0.38, 0, Math.PI * 2); ctx.strokeStyle = '#fff'; ctx.lineWidth = Math.max(1.2, s); ctx.stroke();
+ctx.beginPath(); ctx.arc(bcx, bcy, iconW * 0.16, 0, Math.PI * 2); ctx.fill();
+ctx.fillRect(bcx + iconW * 0.18, bcy - iconW * 0.32, iconW * 0.16, iconW * 0.14);
+ctx.fillText(badgeLabel, badgeX + badgePadX + iconW + Math.round(4 * s), bcy); ctx.restore();
+}
+function applyGpsStamp(dataUrl, info, quality, cb) {
+var img = new Image();
+img.onload = function () {
+var maxW = info && info.maxWidth ? info.maxWidth : 1920;
+var scale = Math.min(1, maxW / img.width);
+var cw = Math.max(1, Math.round(img.width * scale)), ch = Math.max(1, Math.round(img.height * scale));
+var c = document.createElement('canvas'); c.width = cw; c.height = ch;
+var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, cw, ch);
+function finish(mapImg) { try { drawGpsStamp(ctx, cw, ch, info || {}, mapImg); cb(c.toDataURL('image/jpeg', quality == null ? 0.72 : quality)); } catch (e) { cb(dataUrl); } }
+var lat = info && info.lat, lng = info && info.lng, cached = getCachedMapTile(lat, lng);
+if (cached) { finish(cached); return; }
+waitForMapTile(lat, lng, 700, finish);
+};
+img.onerror = function () { cb(dataUrl); }; img.src = dataUrl;
+}
+global.GpsStamp = {
+encodeOLC: encodeOLC, stampDateTime: stampDateTime, buildStampLines: buildStampLines,
+applyGpsStamp: applyGpsStamp, preloadMapTile: preloadMapTile,
+parseGeoAddress: function (data) {
+var a = (data && data.address) || {}, type = (data && (data.addresstype || data.type || data.category)) || '', named = (data && data.name) || '';
+var village = a.village || a.hamlet || a.isolated_dwelling || a.farm || a.croft || '';
+if (!village && /^(village|hamlet|isolated_dwelling|farm)$/i.test(type) && named) village = named;
+if (!village) village = a.suburb || a.neighbourhood || a.quarter || a.residential || a.locality || '';
+var city = a.city || a.town || a.municipality || '';
+if (!city && /^(city|town|municipality)$/i.test(type) && named) city = named;
+var district = a.state_district || a.district || '';
+if (district) district = String(district).replace(/\s+district$/i, '').trim();
+if (!district && a.county && a.county !== city && !/tehsil|tahsil|block/i.test(a.county)) district = String(a.county).replace(/\s+district$/i, '').trim();
+if (village && city && village.toLowerCase() === city.toLowerCase()) village = '';
+if (village && district && village.toLowerCase() === district.toLowerCase()) village = '';
+return { village: village || '', city: city || '', district: district || '', state: a.state || '', postcode: a.postcode || '', country: a.country || 'India', road: a.road || '', displayName: data && data.display_name ? data.display_name : '' };
+}
+};
+})(typeof window !== 'undefined' ? window : this);
+
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyeLgtiYv6sZ2Xr8LGVrh7nAlnYi9_pAZ6xk6-j16vlL4LMwrCeKTUAvqg6HzGaxIru/exec';
+var CORRECT_PASSWORD = '12345';
+var COMPRESS_MAX_WIDTH = 1920;
+var COMPRESS_QUALITY = 0.75;
+var GALLERY_MAX_WIDTH = 1920;
+var GALLERY_QUALITY = 0.85;
+let capturedData = null, camStream = null, facingMode = 'environment';
+let currentLat = null, currentLng = null, gpsReady = false, currentAccuracy = Infinity;
+let currentLocationShort = null, currentLocationFull = null, currentStampAddress = null;
+let currentVillage = '', currentCity = '', currentDistrict = '', currentState = '', currentPin = '', currentCountry = 'India', currentPlusCode = '';
+let locNamePromise = null, lastFetchedLat = null, lastFetchedLng = null;
+let isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
+let loggedInName = null, loggedInMobile = null, syncInProgress = false;
+let acctDuplicate = false, acctCheckTimer = null, acctChecking = false;
+let cachedReport = null, submitLock = false;
+
+const $ = function (id) { return document.getElementById(id); };
+const divSel = $('divisionName'), acctIn = $('acctId'), remSel = $('remarks');
+const villageIn = $('villageName');
+const kwhInput = $('kwhInput'), mdInput = $('mdInput'), kwhArea = $('kwhRemarks');
+const photoArea = $('photoArea'), phHolder = $('phPlaceholder');
+const captImg = $('capturedImg'), prevImg = $('prevImg'), retakeBtn = $('retakeBtn');
+const stampInfo = $('stampInfo');
+const camModal = $('camModal'), camVideo = $('camVideo'), camCanvas = $('camCanvas');
+const formBody = $('formBody'), sucScreen = $('successScreen');
+const formHdr = $('formHeader');
+const fileInput = $('fileInput');
+const loginOverlay = $('loginOverlay'), loginMobile = $('loginMobile'), loginPass = $('loginPass');
+const digitCount = $('digitCount'), toastEl = $('toastEl');
+const userChip = $('userChip'), userChipName = $('userChipName');
+if (!isHTTPS) $('httpsWarn').classList.add('show');
+function onlyNumbers(input) { input.addEventListener('input', function () { this.value = this.value.replace(/[^0-9]/g, ''); }); }
+onlyNumbers(loginMobile); onlyNumbers(acctIn);
+function toast(msg) { $('toastText').textContent = msg; toastEl.classList.add('show');
+clearTimeout(toast._t); toast._t = setTimeout(function () { toastEl.classList.remove('show'); }, 2600);
+}
+function lsRead(key, def) { try { return JSON.parse(localStorage.getItem(key) || def); } catch (e) { return JSON.parse(def); } }
+function lsWrite(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); return true; } catch (e) { return false; } }
+function persistEntries(ents) {
+if (lsWrite('dvvnl_entries', ents)) return true;
+ents.forEach(function (e) { if (e.synced) e.photo = ''; });
+return lsWrite('dvvnl_entries', ents);
+}
+function setUserChip(name) {
+if (name) { userChipName.textContent = name; userChip.classList.add('show'); }
+else userChip.classList.remove('show');
+}
+function showAcctDupPopup() { $('acctDupModalBg').classList.add('show'); }
+function hideAcctDupPopup() { $('acctDupModalBg').classList.remove('show'); }
+/* नोटिस पॉप-अप (User Not Registered / Session Expired) */
+function showNoticePopup(title, msg) {
+ $('noticeTitle').textContent = title || 'User Not Registered';
+ $('noticeMsg').textContent = msg || 'यह मोबाइल नंबर Users Sheet में रजिस्टर्ड नहीं है। कृपया एडमिन से संपर्क करें।';
+ $('noticeModalBg').classList.add('show');
+}
+function hideNoticePopup() { $('noticeModalBg').classList.remove('show'); }
+function isLocalDuplicate(acctId) {
+var ents = lsRead('dvvnl_entries', '[]');
+return ents.some(function (e) { return String(e.acctId || '') === acctId; });
+}
+function markAcctDuplicate(isDup) {
+acctDuplicate = !!isDup;
+if (isDup) { acctIn.classList.add('err'); showAcctDupPopup(); }
+}
+function parseAppsJson(text) {
+if (!text) return null;
+try { return JSON.parse(text); } catch (e) {
+var start = text.indexOf('{');
+var end = text.lastIndexOf('}');
+if (start >= 0 && end > start) {
+try { return JSON.parse(text.slice(start, end + 1)); } catch (e2) { return null; }
+}
+return null;
+}
+}
+function loginUserName(res) {
+if (!res) return '';
+return String(res.name || res.Name || res.userName || res.username || res.NAME || '').trim();
+}
+function isLoginOk(res) {
+if (!res) return false;
+var s = res.success;
+return s === true || s === 'true' || s === 'TRUE' || s === 1 || s === '1' || res.status === 'ok' || res.status === 'success';
+}
+function isNotRegistered(res) {
+if (!res) return false;
+var msg = String(res.message || res.error || '').toLowerCase();
+return msg.indexOf('not registered') !== -1 || msg.indexOf('unregistered') !== -1;
+}
+function serverAcctExists(acctId) {
+return fetch(SCRIPT_URL + '?action=checkAcct&acctId=' + encodeURIComponent(acctId), { method: 'GET', redirect: 'follow' })
+.then(function (r) { return r.text(); })
+.then(function (text) {
+var res = parseAppsJson(text);
+return !!(res && (res.duplicate === true || res.exists === true));
+});
+}
+function removeLocalEntryById(id) {
+var ents = lsRead('dvvnl_entries', '[]');
+var out = ents.filter(function (x) { return String(x.id) !== String(id); });
+if (out.length !== ents.length) persistEntries(out);
+}
+function markLocalEntrySynced(id, serverId) {
+var ents = lsRead('dvvnl_entries', '[]');
+for (var i = 0; i < ents.length; i++) {
+if (String(ents[i].id) === String(id)) { ents[i].synced = true; if (serverId) ents[i].id = serverId; break; }
+}
+persistEntries(ents);
+}
+function checkAcctDuplicate(acctId) {
+if (!/^[0-9]{10}$/.test(acctId)) { acctDuplicate = false; return; }
+if (isLocalDuplicate(acctId)) { markAcctDuplicate(true); return; }
+acctChecking = true;
+fetch(SCRIPT_URL + '?action=checkAcct&acctId=' + encodeURIComponent(acctId))
+.then(function (r) { return r.text(); })
+.then(function (text) {
+acctChecking = false;
+var res = parseAppsJson(text);
+if (acctIn.value.trim() !== acctId) return;
+if (submitLock || sucScreen.classList.contains('active')) return;
+if (res && (res.duplicate === true || res.exists === true)) markAcctDuplicate(true);
+else acctDuplicate = false;
+})
+.catch(function () { acctChecking = false; });
+}
+acctIn.addEventListener('input', function () {
+var len = this.value.length;
+digitCount.textContent = len + '/10';
+digitCount.className = 'digit-count';
+if (len === 10) digitCount.classList.add('full');
+else if (len > 10) digitCount.classList.add('over');
+acctDuplicate = false;
+if (this.value.trim()) { this.classList.remove('err'); $('errAcct').classList.remove('show'); }
+clearTimeout(acctCheckTimer);
+if (len === 10) {
+var id = this.value.trim();
+acctCheckTimer = setTimeout(function () { checkAcctDuplicate(id); }, 280);
+}
+});
+villageIn.addEventListener('input', function () { if (this.value.trim()) { this.classList.remove('err'); $('errVillage').classList.remove('show'); } });
+divSel.addEventListener('change', function () { if (this.value) { this.classList.remove('err'); $('errDivision').classList.remove('show'); } });
+remSel.addEventListener('change', function () { if (this.value) { this.classList.remove('err'); $('errRem').classList.remove('show'); } });
+loginMobile.addEventListener('input', function () { this.classList.remove('login-err'); $('loginErrMob').classList.remove('show'); $('loginErrGen').classList.remove('show'); });
+loginPass.addEventListener('input', function () { this.classList.remove('login-err'); $('loginErrPass').classList.remove('show'); $('loginErrGen').classList.remove('show'); });
+
+/* ==================== SECURITY UPDATE ==================== */
+function istTodayKey(now) {
+now = now || new Date();
+var ist = new Date(now.getTime() + (5 * 60 + 30) * 60 * 1000);
+return ist.getUTCFullYear() + '-' + ('0' + (ist.getUTCMonth() + 1)).slice(-2) + '-' + ('0' + ist.getUTCDate()).slice(-2);
+}
+function forceSessionLogout(msg) {
+try { localStorage.removeItem('dvvnl_login'); } catch (e) {}
+loggedInName = null; loggedInMobile = null;
+setUserChip(null);
+loginMobile.value = ''; loginPass.value = '';
+loginMobile.classList.remove('login-err'); loginPass.classList.remove('login-err');
+loginOverlay.classList.remove('hidden');
+if (msg) { $('loginErrGenText').textContent = msg; $('loginErrGen').classList.add('show'); showNoticePopup('दोबारा लॉगिन करें', msg); }
+}
+function verifyUserWithServer() {
+if (!loggedInMobile) return;
+fetch(SCRIPT_URL + '?action=login&mobile=' + encodeURIComponent(loggedInMobile), { method: 'GET', redirect: 'follow' })
+.then(function (r) { return r.text(); })
+.then(function (text) {
+var res = parseAppsJson(text);
+if (res && !isLoginOk(res)) {
+forceSessionLogout('आपका खाता Users Sheet से हटा दिया गया है — कृपया एडमिन से संपर्क करें');
+}
+})
+.catch(function () {});
+}
+function checkSavedLogin() {
+try {
+var saved = JSON.parse(localStorage.getItem('dvvnl_login') || 'null');
+if (saved && saved.name && saved.mobile && String(saved.mobile).length === 10) {
+if (!saved.loginDate || saved.loginDate !== istTodayKey()) {
+try { localStorage.removeItem('dvvnl_login'); } catch (e) {}
+return false;
+}
+loggedInName = saved.name; loggedInMobile = saved.mobile; setUserChip(saved.name);
+loginOverlay.classList.add('hidden'); startGPS(); syncPending();
+verifyUserWithServer();
+return true;
+}
+} catch (e) {}
+return false;
+}
+function finishLogin(userName, mob) {
+loggedInName = userName; loggedInMobile = mob;
+try { localStorage.setItem('dvvnl_login', JSON.stringify({ name: userName, mobile: mob, loginDate: istTodayKey() })); } catch (e) {}
+setUserChip(userName); loginOverlay.classList.add('hidden'); startGPS(); syncPending();
+toast('स्वागत है, ' + userName + ' जी! 🙏');
+}
+var lastUserVerify = 0;
+setInterval(function () {
+try {
+var saved = JSON.parse(localStorage.getItem('dvvnl_login') || 'null');
+if (loggedInName && saved && saved.loginDate && saved.loginDate !== istTodayKey()) {
+forceSessionLogout('रात्रि 12 बजे सेशन समाप्त हो गया — कृपया दोबारा लॉगिन करें');
+return;
+}
+} catch (e) {}
+if (loggedInName && navigator.onLine && Date.now() - lastUserVerify > 10 * 60 * 1000) {
+lastUserVerify = Date.now();
+verifyUserWithServer();
+}
+}, 30000);
+/* ==================== SECURITY UPDATE END ==================== */
+
+function showLoginFail(notReg) {
+loginMobile.classList.add('login-err');
+if (notReg) { showNoticePopup('User Not Registered', 'यह मोबाइल नंबर Users Sheet में रजिस्टर्ड नहीं है। कृपया एडमिन से संपर्क करें।'); return; }
+ $('loginErrGenText').textContent = 'सर्वर त्रुटि — कृपया दोबारा प्रयास करें';
+ $('loginErrGen').classList.add('show');
+}
+function resetLoginBtn(btn) {
+btn.disabled = false; btn.innerHTML = '<i class="fas fa-right-to-bracket"></i>&nbsp; Login';
+}
+function tryLoginPost(mob, btn) {
+var fd = new FormData();
+fd.append('action', 'login');
+fd.append('mobile', mob);
+return fetch(SCRIPT_URL, { method: 'POST', body: fd, redirect: 'follow' })
+.then(function (r) { return r.text(); })
+.then(function (text) { return parseAppsJson(text); });
+}
+ $('loginBtn').addEventListener('click', function () {
+var mob = loginMobile.value.trim(), pass = loginPass.value.trim(), valid = true;
+if (!/^[0-9]{10}$/.test(mob)) { loginMobile.classList.add('login-err'); $('loginErrMob').classList.add('show'); valid = false; }
+if (pass !== CORRECT_PASSWORD) { loginPass.classList.add('login-err'); $('loginErrPass').classList.add('show'); valid = false; }
+if (!valid) return;
+var btn = this; btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Verifying...';
+ $('loginErrGen').classList.remove('show');
+fetch(SCRIPT_URL + '?action=login&mobile=' + encodeURIComponent(mob), { method: 'GET', redirect: 'follow' })
+.then(function (r) { return r.text(); })
+.then(function (text) {
+var res = parseAppsJson(text);
+if (isLoginOk(res)) {
+resetLoginBtn(btn);
+finishLogin(loginUserName(res) || 'User', mob);
+return null;
+}
+if (isNotRegistered(res)) {
+resetLoginBtn(btn);
+showLoginFail(true);
+return null;
+}
+return tryLoginPost(mob, btn).then(function (res2) {
+resetLoginBtn(btn);
+if (isLoginOk(res2)) finishLogin(loginUserName(res2) || 'User', mob);
+else showLoginFail(isNotRegistered(res2));
+}).catch(function () {
+resetLoginBtn(btn);
+ $('loginErrGenText').textContent = 'नेटवर्क त्रुटि — इंटरनेट जाँचें';
+ $('loginErrGen').classList.add('show');
+});
+})
+.catch(function () {
+tryLoginPost(mob, btn).then(function (res2) {
+resetLoginBtn(btn);
+if (isLoginOk(res2)) finishLogin(loginUserName(res2) || 'User', mob);
+else if (res2) showLoginFail(isNotRegistered(res2));
+else {
+ $('loginErrGenText').textContent = 'नेटवर्क त्रुटि — इंटरनेट जाँचें';
+ $('loginErrGen').classList.add('show');
+}
+}).catch(function () {
+resetLoginBtn(btn);
+ $('loginErrGenText').textContent = 'नेटवर्क त्रुटि — इंटरनेट जाँचें';
+ $('loginErrGen').classList.add('show');
+});
+});
+});
+loginPass.addEventListener('keydown', function (e) { if (e.key === 'Enter') $('loginBtn').click(); });
+loginMobile.addEventListener('keydown', function (e) { if (e.key === 'Enter') loginPass.focus(); });
+function updatePlusCode() {
+if (currentLat == null || currentLng == null) return;
+var enc = GpsStamp.encodeOLC(currentLat, currentLng);
+currentPlusCode = enc && enc.short ? enc.short : '';
+}
+function startGPS() {
+if (!navigator.geolocation) return;
+navigator.geolocation.watchPosition(function (pos) {
+currentLat = pos.coords.latitude; currentLng = pos.coords.longitude;
+currentAccuracy = pos.coords.accuracy || Infinity; gpsReady = true; updatePlusCode();
+if (window.GpsStamp && GpsStamp.preloadMapTile) GpsStamp.preloadMapTile(currentLat, currentLng);
+fetchLocationName(currentLat, currentLng);
+}, function () {}, { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 });
+}
+ $('menuBtn').addEventListener('click', function (e) { e.stopPropagation(); $('menuDropdown').classList.toggle('show'); });
+document.addEventListener('click', function (e) {
+if (!$('menuDropdown').contains(e.target) && e.target !== $('menuBtn') && !$('menuBtn').contains(e.target)) $('menuDropdown').classList.remove('show');
+});
+ $('refreshMenuBtn').addEventListener('click', function () { $('menuDropdown').classList.remove('show'); location.reload(); });
+ $('reportMenuBtn').addEventListener('click', function () { $('menuDropdown').classList.remove('show'); showReport(); $('reportModalBg').classList.add('show'); });
+ $('syncMenuBtn').addEventListener('click', function () { $('menuDropdown').classList.remove('show'); showSyncModal(); });
+ $('syncCloseBtn').addEventListener('click', function () { $('syncModalBg').classList.remove('show'); });
+ $('syncModalBg').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+ $('syncNowBtn').addEventListener('click', function () {
+if (!navigator.onLine) { toast('इंटरनेट नहीं है — नेट आने पर auto sync होगा'); return; }
+toast('Data sync शुरू हुआ...'); syncPending(true);
+});
+ $('reportCloseBtn').addEventListener('click', function () { $('reportModalBg').classList.remove('show'); });
+ $('reportModalBg').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+ $('acctDupOk').addEventListener('click', hideAcctDupPopup);
+ $('acctDupModalBg').addEventListener('click', function (e) { if (e.target === this) hideAcctDupPopup(); });
+ $('noticeOk').addEventListener('click', hideNoticePopup);
+ $('noticeModalBg').addEventListener('click', function (e) { if (e.target === this) hideNoticePopup(); });
+
+/* ========== REPORT MODAL ========== */
+function applyReportCounts(total, today, month) {
+ $('reportTotal').textContent = total;
+ $('reportToday').textContent = today;
+if ($('reportMonth')) $('reportMonth').textContent = month;
+}
+function applyLocalReportCounts() {
+var ents = lsRead('dvvnl_entries', '[]');
+var todayKey = istTodayKey(), monthKey = todayKey.slice(0, 7), td = 0, mo = 0;
+ents.forEach(function (e) {
+var k = String(e.dateKey || '');
+if (k === todayKey) td++;
+if (k.slice(0, 7) === monthKey) mo++;
+});
+applyReportCounts(ents.length, td, mo);
+}
+function showReport() {
+var now = new Date();
+var dispDate = now.toLocaleDateString('hi-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+ $('reportDate').innerHTML = '<i class="fas fa-calendar"></i> आज की तिथि: ' + dispDate;
+
+if (cachedReport) {
+applyReportCounts(cachedReport.total, cachedReport.today, cachedReport.month);
+} else {
+ $('reportTotal').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:16px;"></i>';
+ $('reportToday').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:16px;"></i>';
+if ($('reportMonth')) $('reportMonth').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:16px;"></i>';
+}
+
+if (!SCRIPT_URL.includes('YOUR_URL')) {
+var mobParam = loggedInMobile ? '&mobile=' + encodeURIComponent(loggedInMobile) : '';
+fetch(SCRIPT_URL + '?action=getReport' + mobParam)
+.then(function (r) { return r.text(); })
+.then(function (text) {
+var res = parseAppsJson(text);
+if (res && res.success) {
+cachedReport = {
+total: Number(res.total) || 0,
+today: Number(res.today) || 0,
+month: Number(res.month) || 0
+};
+applyReportCounts(cachedReport.total, cachedReport.today, cachedReport.month);
+} else {
+applyLocalReportCounts();
+}
+})
+.catch(function () { applyLocalReportCounts(); });
+} else {
+applyLocalReportCounts();
+}
+}
+
+/* ========== DATA SYNC ========== */
+function getPendingCount() {
+var ents = lsRead('dvvnl_entries', '[]');
+var n = 0;
+ents.forEach(function (e) { if (!e.synced) n++; });
+return n;
+}
+function updateSyncBadge() {
+var n = getPendingCount();
+var b = $('syncMenuBadge');
+if (n > 0) { b.textContent = n > 99 ? '99+' : n; b.classList.add('show'); }
+else b.classList.remove('show');
+if ($('syncPendingCount')) $('syncPendingCount').textContent = n;
+}
+function showSyncModal() { updateSyncBadge(); $('syncModalBg').classList.add('show'); }
+function isDupRes(res) { return !!(res && (res.duplicate === true || res.exists === true)); }
+function submitToServer(entry) {
+var fd = new FormData();
+fd.append('action', 'entry');
+fd.append('entryId', entry.id || '');
+fd.append('mobile', entry.mobile || '');
+fd.append('name', entry.name || '');
+fd.append('division', entry.divisionName || '');
+fd.append('acctId', entry.acctId || '');
+fd.append('remarks', entry.remarks || '');
+fd.append('villageName', entry.villageName || '');
+fd.append('kwh', entry.kwh || '');
+fd.append('md', entry.md || '');
+fd.append('otherRemarks', entry.kwhRemarks || '');
+fd.append('photo', entry.photo || '');
+fd.append('lat', entry.lat == null ? '' : entry.lat);
+fd.append('lng', entry.lng == null ? '' : entry.lng);
+fd.append('accuracy', entry.accuracy == null ? '' : entry.accuracy);
+fd.append('locationShort', entry.locationShort || '');
+fd.append('locationFull', entry.locationFull || '');
+fd.append('dateTime', entry.dateTime || '');
+return fetch(SCRIPT_URL, { method: 'POST', body: fd, redirect: 'follow' })
+.then(function (r) { return r.text(); })
+.then(function (text) { return parseAppsJson(text); });
+}
+function syncPending(force) {
+if (syncInProgress) return;
+if (!navigator.onLine) { updateSyncBadge(); return; }
+var ents = lsRead('dvvnl_entries', '[]');
+var pending = ents.filter(function (e) { return !e.synced; });
+updateSyncBadge();
+if (!pending.length) return;
+syncInProgress = true;
+var idx = 0, ok = 0, fail = 0;
+function next() {
+if (idx >= pending.length) {
+syncInProgress = false;
+persistEntries(ents);
+updateSyncBadge();
+if (force) toast(ok + ' रिकॉर्ड sync हुए' + (fail ? (', ' + fail + ' बाकी') : ''));
+return;
+}
+var e = pending[idx++];
+submitToServer(e).then(function (res) {
+if (res && (isLoginOk(res) || isDupRes(res))) { e.synced = true; if (res.entryId) e.id = res.entryId; ok++; }
+else fail++;
+next();
+}).catch(function () { fail++; next(); });
+}
+next();
+}
+window.addEventListener('online', function () { syncPending(); });
+window.addEventListener('offline', function () { updateSyncBadge(); });
+
+/* ========== GPS + LOCATION NAME + PHOTO STAMP ========== */
+function sameName(a, b) {
+if (!a || !b) return false;
+return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+}
+function cleanAdminName(name) {
+if (!name) return '';
+return String(name).replace(/\s+(district|tehsil|tahsil|block)$/i, '').trim();
+}
+function fetchJsonTimeout(url, opts, ms) {
+opts = opts || {};
+return new Promise(function (resolve, reject) {
+var done = false, controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+if (controller) opts.signal = controller.signal;
+var timer = setTimeout(function () {
+if (done) return; done = true;
+if (controller) controller.abort();
+reject(new Error('timeout'));
+}, ms || 8000);
+fetch(url, opts).then(function (r) {
+if (!r.ok) throw new Error('HTTP ' + r.status);
+return r.json();
+}).then(function (data) {
+if (done) return; done = true; clearTimeout(timer); resolve(data);
+}).catch(function (err) {
+if (done) return; done = true; clearTimeout(timer); reject(err);
+});
+});
+}
+function safeJson(url, opts, ms) {
+return fetchJsonTimeout(url, opts, ms).catch(function () { return null; });
+}
+function haversineKm(lat1, lon1, lat2, lon2) {
+var R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+return 2 * R * Math.asin(Math.sqrt(a));
+}
+function pickNearbyVillage(elements, lat, lng, city, district) {
+if (!elements || !elements.length) return '';
+var best = '', bestD = Infinity;
+elements.forEach(function (e) {
+var tags = e.tags || {}, name = tags.name || tags['name:en'] || tags['name:hi'] || '';
+if (!name || sameName(name, city) || sameName(name, district)) return;
+var elat = e.lat != null ? e.lat : (e.center && e.center.lat);
+var elng = e.lon != null ? e.lon : (e.center && e.center.lon);
+if (elat == null || elng == null) return;
+var d = haversineKm(lat, lng, elat, elng);
+if (d < bestD) { bestD = d; best = name; }
+});
+return best;
+}
+function fetchNearbyVillage(lat, lng, city, district) {
+var q = '[out:json][timeout:12];(node["place"~"^(village|hamlet|isolated_dwelling|suburb|neighbourhood|locality)$"](around:4000,' + lat + ',' + lng + ');way["place"~"^(village|hamlet|isolated_dwelling|suburb|neighbourhood|locality)$"](around:4000,' + lat + ',' + lng + '););out tags center 30;';
+return safeJson('https://overpass-api.de/api/interpreter', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: q }, 12000)
+.then(function (data) { return pickNearbyVillage(data && data.elements, lat, lng, city, district); });
+}
+function mergeBigData(bd, city, district, state, pin, country) {
+if (!bd) return { city: city || '', district: district || '', state: state || '', pin: pin || '', country: country || 'India', village: '' };
+var out = {
+city: city || bd.city || bd.locality || '', district: district || '',
+state: state || bd.principalSubdivision || '', pin: pin || bd.postcode || '',
+country: country || bd.countryName || 'India', village: ''
+};
+var adm = (bd.localityInfo && bd.localityInfo.administrative) || [];
+adm.forEach(function (item) {
+var desc = ((item && item.description) || '').toLowerCase();
+var name = cleanAdminName(item && item.name);
+if (!name) return;
+if (!out.district && /district/.test(desc)) out.district = name;
+if (!out.city && /\bcity\b|town|municipality/.test(desc)) out.city = name;
+});
+var loc = bd.locality || '';
+if (loc && !sameName(loc, out.city) && !sameName(loc, out.district) && !sameName(loc, out.state)) out.village = loc;
+return out;
+}
+function applyResolvedAddress() {
+var shortParts = [], fullParts = [], seenShort = {}, seenFull = {};
+[currentVillage, currentCity, currentState, currentCountry].forEach(function (part) {
+part = String(part || '').trim();
+if (part && !seenShort[part.toLowerCase()]) { seenShort[part.toLowerCase()] = true; shortParts.push(part); }
+});
+[currentVillage, currentCity, currentDistrict, currentState + (currentPin ? (' ' + currentPin) : ''), currentCountry].forEach(function (part) {
+part = String(part || '').trim();
+if (part && !seenFull[part.toLowerCase()]) { seenFull[part.toLowerCase()] = true; fullParts.push(part); }
+});
+currentLocationShort = shortParts.join(', ') || null;
+currentLocationFull = fullParts.join(', ') || null;
+currentStampAddress = currentLocationFull;
+if (currentVillage && villageIn && !villageIn.value.trim()) {
+villageIn.value = currentVillage;
+villageIn.classList.remove('err');
+$('errVillage').classList.remove('show');
+}
+}
+function fetchLocationName(lat, lng) {
+if (lat == null || lng == null) return Promise.resolve(null);
+if (locNamePromise && lastFetchedLat != null && lastFetchedLng != null && Math.abs(lat - lastFetchedLat) < 0.0005 && Math.abs(lng - lastFetchedLng) < 0.0005) return locNamePromise;
+if (!locNamePromise && lastFetchedLat != null && lastFetchedLng != null && Math.abs(lat - lastFetchedLat) < 0.0005 && Math.abs(lng - lastFetchedLng) < 0.0005 && (currentVillage || currentCity || currentState)) return Promise.resolve({ village: currentVillage });
+lastFetchedLat = lat; lastFetchedLng = lng;
+var nomUrl = 'https://nominatim.openstreetmap.org/reverse?format=jsonv2&addressdetails=1&extratags=1&namedetails=1&zoom=18&accept-language=en&lat=' + encodeURIComponent(lat) + '&lon=' + encodeURIComponent(lng);
+var bigUrl = 'https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=' + encodeURIComponent(lat) + '&longitude=' + encodeURIComponent(lng) + '&localityLanguage=en';
+var thisPromise = Promise.all([
+safeJson(nomUrl, { headers: { 'Accept': 'application/json' } }, 7000),
+safeJson(bigUrl, {}, 6000)
+]).then(function (results) {
+var nom = GpsStamp.parseGeoAddress(results[0] || {});
+var merged = mergeBigData(results[1], nom.city, nom.district, nom.state, nom.postcode, nom.country);
+currentCity = merged.city || '';
+currentDistrict = merged.district || '';
+currentState = merged.state || '';
+currentPin = merged.pin || '';
+currentCountry = merged.country || 'India';
+currentVillage = nom.village || merged.village || '';
+if (currentVillage && (sameName(currentVillage, currentCity) || sameName(currentVillage, currentDistrict))) currentVillage = '';
+applyResolvedAddress();
+if (currentVillage) return { village: currentVillage };
+return fetchNearbyVillage(lat, lng, currentCity, currentDistrict).then(function (near) {
+if (near && !sameName(near, currentCity) && !sameName(near, currentDistrict)) currentVillage = near;
+applyResolvedAddress();
+return { village: currentVillage, city: currentCity, district: currentDistrict };
+});
+}).catch(function () {
+applyResolvedAddress();
+return null;
+});
+locNamePromise = thisPromise;
+thisPromise.then(function () { if (locNamePromise === thisPromise) locNamePromise = null; }, function () { if (locNamePromise === thisPromise) locNamePromise = null; });
+return thisPromise;
+}
+function currentStampInfo(isGallery) {
+updatePlusCode();
+var typedVillage = villageIn && villageIn.value ? villageIn.value.trim() : '';
+var stampVillage = currentVillage || typedVillage || '';
+return {
+lat: currentLat, lng: currentLng,
+village: stampVillage, city: currentCity, district: currentDistrict,
+state: currentState, postcode: currentPin, country: currentCountry || 'India',
+plusCode: currentPlusCode,
+maxWidth: isGallery ? GALLERY_MAX_WIDTH : COMPRESS_MAX_WIDTH
+};
+}
+
+/* ========== PHOTO / CAMERA ========== */
+function resetPhotoUI() {
+capturedData = null;
+prevImg.src = '';
+captImg.style.display = 'none';
+phHolder.style.display = 'flex';
+retakeBtn.style.display = 'none';
+stampInfo.classList.remove('show');
+photoArea.classList.remove('captured');
+}
+function setStampedPhoto(out, hasGps) {
+capturedData = out;
+prevImg.src = out;
+photoArea.classList.add('show');
+photoArea.classList.add('captured');
+phHolder.style.display = 'none';
+captImg.style.display = 'block';
+retakeBtn.style.display = 'inline-block';
+if (hasGps) stampInfo.classList.add('show'); else stampInfo.classList.remove('show');
+$('errPhoto').classList.remove('show');
+}
+function stampPhoto(dataUrl, isGallery) {
+var info = currentStampInfo(isGallery);
+GpsStamp.applyGpsStamp(dataUrl, info, isGallery ? GALLERY_QUALITY : COMPRESS_QUALITY, function (out) {
+setStampedPhoto(out, currentLat != null && currentLng != null);
+});
+}
+function processPhoto(dataUrl, isGallery) {
+function afterGps() {
+if (currentLat == null || currentLng == null) { stampPhoto(dataUrl, isGallery); return; }
+var p = locNamePromise || fetchLocationName(currentLat, currentLng);
+Promise.resolve(p).then(function () { stampPhoto(dataUrl, isGallery); }).catch(function () { stampPhoto(dataUrl, isGallery); });
+}
+if (currentLat != null && currentLng != null) { afterGps(); return; }
+var tries = 0;
+var timer = setInterval(function () {
+tries++;
+if ((currentLat != null && currentLng != null) || tries >= 10) { clearInterval(timer); afterGps(); }
+}, 300);
+}
+
+function openCamera() {
+if (!isHTTPS) { toast('कैमरे के लिए HTTPS जरूरी है'); return; }
+if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { toast('कैमरा उपलब्ध नहीं है'); return; }
+
+var constraints = {
+video: {
+facingMode: { ideal: facingMode },
+width: { ideal: 1920 },
+height: { ideal: 1080 }
+},
+audio: false
+};
+
+navigator.mediaDevices.getUserMedia(constraints)
+.then(function (s) {
+camStream = s;
+camVideo.srcObject = s;
+camModal.classList.add('active');
+})
+.catch(function () {
+navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facingMode } }, audio: false })
+.then(function (s) {
+camStream = s;
+camVideo.srcObject = s;
+camModal.classList.add('active');
+})
+.catch(function () { toast('कैमरा नहीं खुल सका — अनुमति दें'); });
+});
+}
+
+function closeCamera() {
+if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; }
+camModal.classList.remove('active');
+}
+$('camBtn').addEventListener('click', openCamera);
+$('camCloseBtn').addEventListener('click', closeCamera);
+$('flipBtn').addEventListener('click', function () {
+facingMode = facingMode === 'environment' ? 'user' : 'environment';
+if (camStream) {
+camStream.getTracks().forEach(function (t) { t.stop(); });
+navigator.mediaDevices.getUserMedia({
+video: {
+facingMode: { ideal: facingMode },
+width: { ideal: 1920 },
+height: { ideal: 1080 }
+},
+audio: false
+})
+.then(function (s) { camStream = s; camVideo.srcObject = s; })
+.catch(function () {
+navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facingMode } }, audio: false })
+.then(function (s) { camStream = s; camVideo.srcObject = s; })
+.catch(function () {});
+});
+}
+});
+$('shutterBtn').addEventListener('click', function () {
+if (!camStream) return;
+var vw = camVideo.videoWidth, vh = camVideo.videoHeight;
+if (!vw || !vh) { toast('कैमरा तैयार नहीं है — फिर कोशिश करें'); return; }
+camCanvas.width = vw; camCanvas.height = vh;
+camCanvas.getContext('2d').drawImage(camVideo, 0, 0, vw, vh);
+var data = camCanvas.toDataURL('image/jpeg', 0.95);
+closeCamera();
+processPhoto(data, false);
+});
+$('galBtn').addEventListener('click', function () { fileInput.click(); });
+fileInput.addEventListener('change', function () {
+var f = this.files && this.files[0];
+this.value = '';
+if (!f) return;
+var rd = new FileReader();
+rd.onload = function (e) { processPhoto(e.target.result, true); };
+rd.onerror = function () { toast('फ़ाइल पढ़ने में समस्या — दूसरी फोटो चुनें'); };
+rd.readAsDataURL(f);
+});
+$('retakeBtn').addEventListener('click', function (e) { e.stopPropagation(); resetPhotoUI(); });
+
+/* ========== FORM SUBMIT ========== */
+$('entryForm').addEventListener('submit', function (ev) {
+ev.preventDefault();
+if (submitLock) return;
+var ok = true;
+var division = divSel.value, acct = acctIn.value.trim(), rem = remSel.value, village = villageIn.value.trim();
+if (!division) { divSel.classList.add('err'); $('errDivision').classList.add('show'); ok = false; }
+if (!/^[0-9]{10}$/.test(acct)) { acctIn.classList.add('err'); $('errAcct').classList.add('show'); ok = false; }
+if (acctDuplicate || isLocalDuplicate(acct)) { markAcctDuplicate(true); ok = false; }
+if (!rem) { remSel.classList.add('err'); $('errRem').classList.add('show'); ok = false; }
+if (!village) { villageIn.classList.add('err'); $('errVillage').classList.add('show'); ok = false; }
+if (!capturedData) { $('errPhoto').classList.add('show'); ok = false; }
+if (!ok) return;
+submitLock = true;
+var btn = $('submitBtn'); btn.disabled = true;
+btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Checking...';
+var nowD = new Date();
+var ist = new Date(nowD.getTime() + 330 * 60000);
+function p2(n) { return ('0' + n).slice(-2); }
+var dateKey = ist.getUTCFullYear() + '-' + p2(ist.getUTCMonth() + 1) + '-' + p2(ist.getUTCDate());
+var h24 = ist.getUTCHours(), ampm = h24 >= 12 ? 'PM' : 'AM', hh = h24 % 12; if (hh === 0) hh = 12;
+var dateTimeStr = p2(ist.getUTCDate()) + '/' + p2(ist.getUTCMonth() + 1) + '/' + ist.getUTCFullYear() + ' ' + p2(hh) + ':' + p2(ist.getUTCMinutes()) + ' ' + ampm;
+var entry = {
+id: 'SI' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+mobile: loggedInMobile, name: loggedInName,
+divisionName: division, acctId: acct, remarks: rem,
+villageName: village,
+kwh: kwhInput.value.trim(), md: mdInput.value.trim(), kwhRemarks: kwhArea.value.trim(),
+photo: capturedData,
+lat: currentLat, lng: currentLng,
+accuracy: (currentAccuracy && isFinite(currentAccuracy)) ? Math.round(currentAccuracy) : '',
+locationShort: currentLocationShort || '',
+locationFull: currentLocationFull || '',
+address: currentStampAddress || currentLocationShort || '',
+dateTime: dateTimeStr,
+dateKey: dateKey,
+synced: false
+};
+var ents = lsRead('dvvnl_entries', '[]');
+ents.push(entry);
+persistEntries(ents);
+updateSyncBadge();
+function unlock() { submitLock = false; btn.disabled = false; btn.innerHTML = 'Submit Entry'; }
+function sendNow() {
+btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Saving...';
+submitToServer(entry).then(function (res) {
+if (res && (isLoginOk(res) || isDupRes(res))) {
+entry.synced = true;
+markLocalEntrySynced(entry.id, res.entryId);
+showSuccess(entry, 'drive');
+} else {
+showSuccess(entry, 'fail');
+}
+unlock(); updateSyncBadge();
+}).catch(function () { showSuccess(entry, 'fail'); unlock(); updateSyncBadge(); });
+}
+if (navigator.onLine && !SCRIPT_URL.includes('YOUR_URL')) {
+serverAcctExists(acct).then(function (isDup) {
+if (isDup) {
+removeLocalEntryById(entry.id);
+acctIn.classList.add('err');
+acctDuplicate = true;
+showAcctDupPopup();
+updateSyncBadge();
+unlock();
+return;
+}
+sendNow();
+}).catch(function () { sendNow(); });
+} else {
+showSuccess(entry, 'local');
+unlock(); updateSyncBadge();
+}
+});
+function showSuccess(entry, loc) {
+formBody.style.display = 'none';
+formHdr.style.display = 'none';
+sucScreen.classList.add('active');
+$('sucDateTime').textContent = entry.dateTime;
+var el = $('sucSaveLoc');
+if (loc === 'drive') el.innerHTML = '<span class="loc-badge drive"><i class="fas fa-cloud-arrow-up"></i> Google Drive / Sheet पर सेव</span>';
+else if (loc === 'local') el.innerHTML = '<span class="loc-badge local"><i class="fas fa-mobile-screen"></i> डिवाइस पर सेव — नेट आने पर sync होगा</span>';
+else el.innerHTML = '<span class="loc-badge fail"><i class="fas fa-triangle-exclamation"></i> सर्वर सेव विफल — नेट आने पर sync होगा</span>';
+}
+$('newEntryBtn').addEventListener('click', function () {
+sucScreen.classList.remove('active');
+formBody.style.display = '';
+formHdr.style.display = '';
+$('entryForm').reset();
+digitCount.textContent = '0/10'; digitCount.className = 'digit-count';
+resetPhotoUI();
+acctDuplicate = false;
+hideAcctDupPopup();
+});
+
+/* ========== LOGOUT ========== */
+$('logoutBtn').addEventListener('click', function () { $('logoutModalBg').classList.add('show'); });
+$('logoutCancel').addEventListener('click', function () { $('logoutModalBg').classList.remove('show'); });
+$('logoutModalBg').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('show'); });
+$('logoutConfirm').addEventListener('click', function () {
+$('logoutModalBg').classList.remove('show');
+try { localStorage.removeItem('dvvnl_login'); } catch (e) {}
+loggedInName = null; loggedInMobile = null;
+setUserChip(null);
+loginMobile.value = ''; loginPass.value = '';
+loginOverlay.classList.remove('hidden');
+});
+
+/* ========== INIT ========== */
+updateSyncBadge();
+checkSavedLogin();
+</script>
+</body>
+</html>
